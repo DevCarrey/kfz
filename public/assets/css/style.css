@@ -1,0 +1,4486 @@
+/* =========================================================
+   Kfz Digital
+   Globale Styles
+   ========================================================= */
+
+
+/* =========================================================
+   1. CSS-Variablen
+   ========================================================= */
+
+:root {
+    --kfz-primary: #155eef;
+    --kfz-primary-dark: #1048bd;
+    --kfz-primary-light: #eaf2ff;
+
+    --kfz-secondary: #0d9488;
+    --kfz-secondary-dark: #08766e;
+    --kfz-secondary-light: #e7f8f6;
+
+    --kfz-dark: #172033;
+    --kfz-text: #344054;
+    --kfz-muted: #667085;
+    --kfz-light-text: #98a2b3;
+
+    --kfz-white: #ffffff;
+    --kfz-background: #f8fafc;
+    --kfz-border: #e4e7ec;
+    --kfz-border-dark: #d0d5dd;
+
+    --kfz-success: #12b76a;
+    --kfz-warning: #f79009;
+    --kfz-danger: #d92d20;
+
+    --kfz-shadow-small: 0 2px 8px rgba(16, 24, 40, 0.06);
+    --kfz-shadow-medium: 0 8px 24px rgba(16, 24, 40, 0.10);
+    --kfz-shadow-large: 0 20px 50px rgba(16, 24, 40, 0.14);
+
+    --kfz-radius-small: 8px;
+    --kfz-radius-medium: 12px;
+    --kfz-radius-large: 18px;
+
+    --kfz-transition: 180ms ease;
+}
+
+
+/* =========================================================
+   2. Reset und Basis
+   ========================================================= */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    margin: 0;
+    min-width: 320px;
+
+    background: var(--kfz-background);
+    color: var(--kfz-text);
+
+    font-family:
+        Inter,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        Roboto,
+        Helvetica,
+        Arial,
+        sans-serif;
+
+    font-size: 16px;
+    line-height: 1.6;
+    text-rendering: optimizeLegibility;
+}
+
+img,
+svg {
+    display: block;
+    max-width: 100%;
+}
+
+img {
+    height: auto;
+}
+
+a {
+    color: inherit;
+    text-decoration: none;
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+::selection {
+    background: var(--kfz-primary);
+    color: var(--kfz-white);
+}
+
+
+/* =========================================================
+   3. Allgemeine Hilfsklassen
+   ========================================================= */
+
+.container {
+    width: min(100% - 32px, 1240px);
+    margin-inline: auto;
+}
+
+.page-content {
+    min-height: 60vh;
+}
+
+.visually-hidden {
+    position: absolute !important;
+
+    width: 1px !important;
+    height: 1px !important;
+
+    padding: 0 !important;
+    margin: -1px !important;
+
+    overflow: hidden !important;
+    clip: rect(0, 0, 0, 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.skip-link {
+    position: fixed;
+    z-index: 9999;
+    top: 12px;
+    left: 12px;
+
+    padding: 10px 16px;
+
+    background: var(--kfz-dark);
+    color: var(--kfz-white);
+
+    border-radius: var(--kfz-radius-small);
+
+    transform: translateY(-150%);
+    transition: transform var(--kfz-transition);
+}
+
+.skip-link:focus {
+    transform: translateY(0);
+    outline: 3px solid rgba(21, 94, 239, 0.35);
+    outline-offset: 3px;
+}
+
+
+/* =========================================================
+   4. Header
+   ========================================================= */
+
+.kfz-main-header {
+    position: sticky;
+    z-index: 1000;
+    top: 0;
+
+    width: 100%;
+
+    background: rgba(255, 255, 255, 0.96);
+    border-bottom: 1px solid var(--kfz-border);
+
+    box-shadow: var(--kfz-shadow-small);
+    backdrop-filter: blur(14px);
+}
+
+.kfz-header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+
+    min-height: 82px;
+}
+
+
+/* =========================================================
+   5. Branding
+   ========================================================= */
+
+.kfz-brand {
+    display: inline-flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 12px;
+
+    color: var(--kfz-dark);
+
+    transition:
+        color var(--kfz-transition),
+        transform var(--kfz-transition);
+}
+
+.kfz-brand:hover {
+    color: var(--kfz-primary);
+    transform: translateY(-1px);
+}
+
+.kfz-brand-logo {
+    width: auto;
+    height: 48px;
+    object-fit: contain;
+}
+
+.kfz-brand-icon {
+    display: grid;
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+
+    background: linear-gradient(
+        135deg,
+        var(--kfz-primary),
+        var(--kfz-secondary)
+    );
+
+    color: var(--kfz-white);
+    border-radius: 14px;
+    box-shadow: 0 8px 18px rgba(21, 94, 239, 0.22);
+}
+
+.kfz-brand-icon svg {
+    width: 29px;
+    height: 29px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-brand-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.kfz-brand-name {
+    color: var(--kfz-dark);
+    font-size: 1.35rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+}
+
+.kfz-brand-slogan {
+    margin-top: 4px;
+
+    color: var(--kfz-muted);
+    font-size: 0.72rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+
+/* =========================================================
+   6. Hauptnavigation
+   ========================================================= */
+
+.kfz-main-navigation {
+    display: flex;
+    align-items: center;
+}
+
+.kfz-navigation-list {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 4px;
+
+    padding: 0;
+    margin: 0;
+
+    list-style: none;
+}
+
+.kfz-navigation-item {
+    display: flex;
+    align-items: center;
+}
+
+.kfz-navigation-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    min-height: 42px;
+    padding: 9px 12px;
+
+    color: var(--kfz-text);
+    border-radius: var(--kfz-radius-small);
+
+    font-size: 0.92rem;
+    font-weight: 600;
+    white-space: nowrap;
+
+    transition:
+        color var(--kfz-transition),
+        background-color var(--kfz-transition),
+        transform var(--kfz-transition);
+}
+
+.kfz-navigation-link:hover {
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    transform: translateY(-1px);
+}
+
+.kfz-navigation-link.active {
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+}
+
+.kfz-navigation-icon {
+    width: 18px;
+    height: 18px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+/* =========================================================
+   7. Buttons
+   ========================================================= */
+
+.kfz-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    min-height: 44px;
+    padding: 10px 17px;
+
+    border: 1px solid transparent;
+    border-radius: var(--kfz-radius-small);
+
+    font-size: 0.92rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+
+    transition:
+        background-color var(--kfz-transition),
+        border-color var(--kfz-transition),
+        box-shadow var(--kfz-transition),
+        transform var(--kfz-transition);
+}
+
+.kfz-button:hover {
+    transform: translateY(-2px);
+}
+
+.kfz-button:focus-visible,
+.kfz-navigation-link:focus-visible,
+.kfz-brand:focus-visible,
+.kfz-account-link:focus-visible,
+.kfz-menu-toggle:focus-visible {
+    outline: 3px solid rgba(21, 94, 239, 0.28);
+    outline-offset: 3px;
+}
+
+.kfz-button-primary {
+    background: var(--kfz-primary);
+    color: var(--kfz-white);
+    box-shadow: 0 5px 14px rgba(21, 94, 239, 0.22);
+}
+
+.kfz-button-primary:hover {
+    background: var(--kfz-primary-dark);
+    color: var(--kfz-white);
+    box-shadow: 0 8px 20px rgba(21, 94, 239, 0.30);
+}
+
+.kfz-button-icon {
+    width: 18px;
+    height: 18px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+}
+
+
+/* =========================================================
+   8. Benutzerkonto
+   ========================================================= */
+
+.kfz-account-item {
+    margin-left: 8px;
+    padding-left: 12px;
+
+    border-left: 1px solid var(--kfz-border);
+}
+
+.kfz-account-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    color: var(--kfz-dark);
+
+    font-size: 0.9rem;
+    font-weight: 700;
+    white-space: nowrap;
+
+    transition:
+        color var(--kfz-transition),
+        transform var(--kfz-transition);
+}
+
+.kfz-account-link:hover {
+    color: var(--kfz-primary);
+    transform: translateY(-1px);
+}
+
+.kfz-account-icon {
+    display: grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+
+    background: var(--kfz-secondary-light);
+    color: var(--kfz-secondary);
+
+    border-radius: 50%;
+}
+
+.kfz-account-icon svg {
+    width: 20px;
+    height: 20px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+/* =========================================================
+   9. Mobiler Menübutton
+   ========================================================= */
+
+.kfz-menu-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 5px;
+
+    width: 44px;
+    height: 44px;
+
+    padding: 8px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border-dark);
+    border-radius: var(--kfz-radius-small);
+}
+
+.kfz-menu-toggle-line {
+    display: block;
+
+    width: 21px;
+    height: 2px;
+
+    background: var(--kfz-dark);
+    border-radius: 10px;
+
+    transition:
+        transform var(--kfz-transition),
+        opacity var(--kfz-transition);
+}
+
+.kfz-menu-toggle[aria-expanded="true"]
+    .kfz-menu-toggle-line:nth-child(2) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.kfz-menu-toggle[aria-expanded="true"]
+    .kfz-menu-toggle-line:nth-child(3) {
+    opacity: 0;
+}
+
+.kfz-menu-toggle[aria-expanded="true"]
+    .kfz-menu-toggle-line:nth-child(4) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+
+/* =========================================================
+   10. Allgemeine Inhaltsbereiche
+   ========================================================= */
+
+.kfz-section {
+    padding: 80px 0;
+}
+
+.kfz-section-light {
+    background: var(--kfz-white);
+}
+
+.kfz-section-dark {
+    background: var(--kfz-dark);
+    color: var(--kfz-white);
+}
+
+.kfz-section-header {
+    max-width: 720px;
+    margin-bottom: 38px;
+}
+
+.kfz-section-kicker {
+    display: inline-block;
+    margin-bottom: 10px;
+
+    color: var(--kfz-primary);
+
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.kfz-section-title {
+    margin: 0 0 14px;
+
+    color: var(--kfz-dark);
+
+    font-size: clamp(2rem, 4vw, 3rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 1.1;
+}
+
+.kfz-section-dark .kfz-section-title {
+    color: var(--kfz-white);
+}
+
+.kfz-section-text {
+    margin: 0;
+
+    color: var(--kfz-muted);
+    font-size: 1.05rem;
+}
+
+
+/* =========================================================
+   11. Hero-Bereich
+   ========================================================= */
+
+.kfz-hero {
+    position: relative;
+    overflow: hidden;
+
+    padding: 92px 0 105px;
+
+    background:
+        radial-gradient(
+            circle at 90% 15%,
+            rgba(21, 94, 239, 0.16),
+            transparent 34%
+        ),
+        linear-gradient(
+            135deg,
+            #f5f9ff 0%,
+            #ffffff 54%,
+            #effcfb 100%
+        );
+}
+
+.kfz-hero::after {
+    position: absolute;
+    right: -100px;
+    bottom: -150px;
+
+    width: 390px;
+    height: 390px;
+
+    content: "";
+
+    border: 1px solid rgba(21, 94, 239, 0.10);
+    border-radius: 50%;
+    box-shadow:
+        0 0 0 35px rgba(21, 94, 239, 0.035),
+        0 0 0 70px rgba(21, 94, 239, 0.025);
+
+    pointer-events: none;
+}
+
+.kfz-hero-content {
+    position: relative;
+    z-index: 1;
+
+    max-width: 720px;
+}
+
+.kfz-hero-title {
+    margin: 0 0 20px;
+
+    color: var(--kfz-dark);
+
+    font-size: clamp(2.4rem, 6vw, 4.5rem);
+    font-weight: 850;
+    letter-spacing: -0.055em;
+    line-height: 1.03;
+}
+
+.kfz-hero-text {
+    max-width: 640px;
+    margin: 0 0 30px;
+
+    color: var(--kfz-muted);
+    font-size: clamp(1rem, 2vw, 1.2rem);
+}
+
+.kfz-hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+}
+
+
+/* =========================================================
+   12. Karten
+   ========================================================= */
+
+.kfz-card {
+    padding: 28px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+
+    box-shadow: var(--kfz-shadow-small);
+
+    transition:
+        border-color var(--kfz-transition),
+        box-shadow var(--kfz-transition),
+        transform var(--kfz-transition);
+}
+
+.kfz-card:hover {
+    border-color: rgba(21, 94, 239, 0.26);
+    box-shadow: var(--kfz-shadow-medium);
+    transform: translateY(-3px);
+}
+
+.kfz-card-icon {
+    display: grid;
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+    margin-bottom: 18px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-card-icon svg {
+    width: 25px;
+    height: 25px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-card-title {
+    margin: 0 0 8px;
+
+    color: var(--kfz-dark);
+    font-size: 1.15rem;
+    font-weight: 750;
+}
+
+.kfz-card-text {
+    margin: 0;
+    color: var(--kfz-muted);
+}
+
+
+/* =========================================================
+   13. Vorgangs- und Statusanzeigen
+   ========================================================= */
+
+.kfz-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    padding: 6px 10px;
+
+    border-radius: 999px;
+
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.kfz-status::before {
+    width: 7px;
+    height: 7px;
+
+    content: "";
+
+    background: currentColor;
+    border-radius: 50%;
+}
+
+.kfz-status-success {
+    background: #eafaf1;
+    color: var(--kfz-success);
+}
+
+.kfz-status-warning {
+    background: #fff7e8;
+    color: var(--kfz-warning);
+}
+
+.kfz-status-danger {
+    background: #fff0ee;
+    color: var(--kfz-danger);
+}
+
+.kfz-status-neutral {
+    background: #f2f4f7;
+    color: var(--kfz-muted);
+}
+
+
+/* =========================================================
+   14. Formulare
+   ========================================================= */
+
+.kfz-form-group {
+    margin-bottom: 20px;
+}
+
+.kfz-form-label {
+    display: block;
+    margin-bottom: 7px;
+
+    color: var(--kfz-dark);
+
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.kfz-form-control,
+.kfz-form-select {
+    display: block;
+
+    width: 100%;
+    min-height: 46px;
+
+    padding: 10px 13px;
+
+    background: var(--kfz-white);
+    color: var(--kfz-dark);
+
+    border: 1px solid var(--kfz-border-dark);
+    border-radius: var(--kfz-radius-small);
+
+    outline: none;
+
+    transition:
+        border-color var(--kfz-transition),
+        box-shadow var(--kfz-transition);
+}
+
+.kfz-form-control::placeholder {
+    color: var(--kfz-light-text);
+}
+
+.kfz-form-control:hover,
+.kfz-form-select:hover {
+    border-color: #98a2b3;
+}
+
+.kfz-form-control:focus,
+.kfz-form-select:focus {
+    border-color: var(--kfz-primary);
+    box-shadow: 0 0 0 4px rgba(21, 94, 239, 0.12);
+}
+
+.kfz-form-help {
+    display: block;
+    margin-top: 6px;
+
+    color: var(--kfz-muted);
+    font-size: 0.82rem;
+}
+
+
+/* =========================================================
+   15. Tabellen
+   ========================================================= */
+
+.kfz-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-table {
+    width: 100%;
+    min-width: 680px;
+
+    border-collapse: collapse;
+}
+
+.kfz-table th,
+.kfz-table td {
+    padding: 15px 18px;
+
+    border-bottom: 1px solid var(--kfz-border);
+    text-align: left;
+    vertical-align: middle;
+}
+
+.kfz-table th {
+    background: #f9fafb;
+    color: var(--kfz-muted);
+
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.kfz-table td {
+    color: var(--kfz-text);
+    font-size: 0.92rem;
+}
+
+.kfz-table tr:last-child td {
+    border-bottom: 0;
+}
+
+.kfz-table tbody tr {
+    transition: background-color var(--kfz-transition);
+}
+
+.kfz-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+
+/* =========================================================
+   16. Footer-Grundlagen
+   ========================================================= */
+
+.kfz-footer {
+    padding: 48px 0 28px;
+
+    background: var(--kfz-dark);
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.kfz-footer a {
+    color: rgba(255, 255, 255, 0.78);
+    transition: color var(--kfz-transition);
+}
+
+.kfz-footer a:hover {
+    color: var(--kfz-white);
+}
+
+.kfz-footer-bottom {
+    padding-top: 24px;
+    margin-top: 32px;
+
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.85rem;
+}
+
+
+/* =========================================================
+   17. Responsive Design
+   ========================================================= */
+
+@media (max-width: 1180px) {
+
+    .kfz-header-inner {
+        gap: 18px;
+    }
+
+    .kfz-navigation-link {
+        padding-inline: 9px;
+        font-size: 0.86rem;
+    }
+
+    .kfz-navigation-icon {
+        display: none;
+    }
+
+    .kfz-button {
+        padding-inline: 13px;
+    }
+}
+
+
+@media (max-width: 980px) {
+
+    .kfz-header-inner {
+        position: relative;
+        min-height: 72px;
+    }
+
+    .kfz-menu-toggle {
+        display: inline-flex;
+        flex-shrink: 0;
+    }
+
+    .kfz-main-navigation {
+        position: absolute;
+        z-index: 20;
+        top: calc(100% + 1px);
+        left: 0;
+        right: 0;
+
+        display: none;
+
+        padding: 12px;
+
+        background: var(--kfz-white);
+        border: 1px solid var(--kfz-border);
+        border-top: 0;
+        border-radius: 0 0 var(--kfz-radius-medium) var(--kfz-radius-medium);
+
+        box-shadow: var(--kfz-shadow-medium);
+    }
+
+    .kfz-main-navigation.is-open {
+        display: block;
+    }
+
+    .kfz-navigation-list {
+        display: flex;
+        align-items: stretch;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .kfz-navigation-item {
+        width: 100%;
+    }
+
+    .kfz-navigation-link,
+    .kfz-account-link,
+    .kfz-button {
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    .kfz-navigation-icon {
+        display: block;
+    }
+
+    .kfz-navigation-action {
+        margin-top: 8px;
+    }
+
+    .kfz-account-item {
+        padding-top: 10px;
+        padding-left: 0;
+        margin-top: 8px;
+        margin-left: 0;
+
+        border-top: 1px solid var(--kfz-border);
+        border-left: 0;
+    }
+}
+
+
+@media (max-width: 576px) {
+
+    .container {
+        width: min(100% - 24px, 1240px);
+    }
+
+    .kfz-brand-logo,
+    .kfz-brand-icon {
+        width: 42px;
+        height: 42px;
+    }
+
+    .kfz-brand-name {
+        font-size: 1.12rem;
+    }
+
+    .kfz-brand-slogan {
+        max-width: 180px;
+
+        font-size: 0.65rem;
+        line-height: 1.2;
+    }
+
+    .kfz-hero {
+        padding: 64px 0 72px;
+    }
+
+    .kfz-hero-title {
+        font-size: 2.5rem;
+    }
+
+    .kfz-hero-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kfz-hero-actions .kfz-button {
+        width: 100%;
+    }
+
+    .kfz-section {
+        padding: 58px 0;
+    }
+
+    .kfz-card {
+        padding: 22px;
+    }
+}
+
+
+/* =========================================================
+   18. Reduced Motion
+   ========================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+    }
+}
+
+
+/* =========================================================
+   Startseite
+   ========================================================= */
+
+.kfz-button-outline {
+    background: var(--kfz-white);
+    color: var(--kfz-primary);
+    border-color: var(--kfz-border-dark);
+}
+
+.kfz-button-outline:hover {
+    background: var(--kfz-primary-light);
+    border-color: var(--kfz-primary);
+    color: var(--kfz-primary);
+}
+
+.kfz-button-light {
+    background: var(--kfz-white);
+    color: var(--kfz-primary);
+}
+
+.kfz-button-light:hover {
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary-dark);
+}
+
+.kfz-button-full {
+    width: 100%;
+}
+
+.kfz-button-spaced {
+    margin-top: 26px;
+}
+
+.kfz-hero-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(340px, 0.85fr);
+    align-items: center;
+    gap: 70px;
+}
+
+.kfz-hero-trust {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 28px;
+}
+
+.kfz-trust-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+
+    color: var(--kfz-muted);
+    font-size: 0.88rem;
+    font-weight: 700;
+}
+
+.kfz-trust-item svg {
+    width: 18px;
+    height: 18px;
+
+    fill: none;
+    stroke: var(--kfz-secondary);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-hero-card {
+    padding: 28px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: 22px;
+
+    box-shadow: var(--kfz-shadow-large);
+}
+
+.kfz-hero-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 26px;
+}
+
+.kfz-hero-card-header strong,
+.kfz-hero-card-header small {
+    display: block;
+}
+
+.kfz-hero-card-header strong {
+    color: var(--kfz-dark);
+    font-size: 1.05rem;
+}
+
+.kfz-hero-card-header small {
+    margin-top: 3px;
+    color: var(--kfz-muted);
+    font-size: 0.82rem;
+}
+
+.kfz-hero-card-icon {
+    display: grid;
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 14px;
+}
+
+.kfz-hero-card-icon svg {
+    width: 25px;
+    height: 25px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-form-notice {
+    margin: 14px 0 0;
+
+    color: var(--kfz-muted);
+    font-size: 0.78rem;
+    text-align: center;
+}
+
+.kfz-grid {
+    display: grid;
+    gap: 20px;
+}
+
+.kfz-grid-four {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.kfz-section-header-centered {
+    max-width: 760px;
+    margin-right: auto;
+    margin-left: auto;
+    text-align: center;
+}
+
+.kfz-service-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 285px;
+}
+
+.kfz-service-card .kfz-card-text {
+    flex: 1;
+}
+
+.kfz-card-icon-teal {
+    background: var(--kfz-secondary-light);
+    color: var(--kfz-secondary);
+}
+
+.kfz-card-icon-orange {
+    background: #fff4e5;
+    color: #d97706;
+}
+
+.kfz-card-icon-purple {
+    background: #f3edff;
+    color: #7c3aed;
+}
+
+.kfz-service-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 22px;
+
+    color: var(--kfz-primary);
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.kfz-service-link span {
+    font-size: 1.2rem;
+    transition: transform var(--kfz-transition);
+}
+
+.kfz-service-card:hover .kfz-service-link span {
+    transform: translateX(4px);
+}
+
+.kfz-benefits-section {
+    background:
+        linear-gradient(
+            135deg,
+            #f2f7ff 0%,
+            #ffffff 55%,
+            #effcfb 100%
+        );
+}
+
+.kfz-two-column {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+    align-items: center;
+    gap: 80px;
+}
+
+.kfz-benefit-list {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.kfz-benefit-item {
+    display: grid;
+    grid-template-columns: 52px 1fr;
+    gap: 18px;
+
+    padding: 22px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-benefit-number {
+    color: var(--kfz-primary);
+    font-size: 0.82rem;
+    font-weight: 900;
+}
+
+.kfz-benefit-item h3 {
+    margin: 0 0 5px;
+    color: var(--kfz-dark);
+    font-size: 1rem;
+}
+
+.kfz-benefit-item p {
+    margin: 0;
+    color: var(--kfz-muted);
+    font-size: 0.9rem;
+}
+
+.kfz-steps {
+    counter-reset: steps;
+}
+
+.kfz-step {
+    position: relative;
+    padding: 24px;
+
+    background: var(--kfz-background);
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-step-number {
+    display: grid;
+    place-items: center;
+
+    width: 42px;
+    height: 42px;
+    margin-bottom: 18px;
+
+    background: var(--kfz-primary);
+    color: var(--kfz-white);
+    border-radius: 50%;
+
+    font-weight: 800;
+}
+
+.kfz-step h3 {
+    margin: 0 0 8px;
+    color: var(--kfz-dark);
+    font-size: 1.05rem;
+}
+
+.kfz-step p {
+    margin: 0;
+    color: var(--kfz-muted);
+    font-size: 0.9rem;
+}
+
+.kfz-trust-section {
+    padding-top: 0;
+    background: var(--kfz-white);
+}
+
+.kfz-trust-box {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 22px;
+
+    padding: 30px;
+
+    background: var(--kfz-dark);
+    border-radius: var(--kfz-radius-large);
+    color: var(--kfz-white);
+}
+
+.kfz-trust-box-icon {
+    display: grid;
+    place-items: center;
+
+    width: 52px;
+    height: 52px;
+
+    background: rgba(255, 255, 255, 0.12);
+    color: #8db7ff;
+    border-radius: 15px;
+}
+
+.kfz-trust-box-icon svg {
+    width: 28px;
+    height: 28px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-trust-box h2 {
+    margin: 0 0 6px;
+    font-size: 1.15rem;
+}
+
+.kfz-trust-box p {
+    max-width: 760px;
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.9rem;
+}
+
+.kfz-cta-section {
+    padding-top: 30px;
+    background: var(--kfz-white);
+}
+
+.kfz-cta-box {
+    padding: 62px 30px;
+
+    background:
+        radial-gradient(
+            circle at 85% 30%,
+            rgba(13, 148, 136, 0.18),
+            transparent 32%
+        ),
+        linear-gradient(
+            135deg,
+            #edf4ff,
+            #f5fffd
+        );
+
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    text-align: center;
+}
+
+.kfz-cta-box .kfz-section-title {
+    margin-bottom: 12px;
+}
+
+.kfz-cta-box .kfz-section-text {
+    margin-bottom: 24px;
+}
+
+.kfz-footer-grid {
+    display: grid;
+    grid-template-columns: 1.4fr repeat(3, 1fr);
+    gap: 40px;
+}
+
+.kfz-footer-brand {
+    display: inline-block;
+    margin-bottom: 12px;
+
+    color: var(--kfz-white) !important;
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.kfz-footer p {
+    max-width: 260px;
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.58);
+    font-size: 0.9rem;
+}
+
+.kfz-footer h2 {
+    margin: 0 0 14px;
+
+    color: var(--kfz-white);
+    font-size: 0.9rem;
+}
+
+.kfz-footer ul {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    padding: 0;
+    margin: 0;
+
+    list-style: none;
+}
+
+.kfz-footer li {
+    font-size: 0.86rem;
+}
+
+
+@media (max-width: 980px) {
+
+    .kfz-hero-layout,
+    .kfz-two-column {
+        grid-template-columns: 1fr;
+        gap: 42px;
+    }
+
+    .kfz-grid-four {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kfz-trust-box {
+        grid-template-columns: auto 1fr;
+    }
+
+    .kfz-trust-box .kfz-button {
+        grid-column: 1 / -1;
+        width: max-content;
+    }
+
+    .kfz-footer-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+
+@media (max-width: 576px) {
+
+    .kfz-grid-four {
+        grid-template-columns: 1fr;
+    }
+
+    .kfz-hero-card {
+        padding: 22px;
+    }
+
+    .kfz-trust-box {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .kfz-trust-box-icon {
+        margin: 0 auto;
+    }
+
+    .kfz-trust-box .kfz-button {
+        width: 100%;
+    }
+
+    .kfz-footer-grid {
+        grid-template-columns: 1fr;
+        gap: 28px;
+    }
+}
+
+/* =========================================================
+   Vorgang starten
+   ========================================================= */
+
+.kfz-process-page {
+    background: var(--kfz-background);
+}
+
+.kfz-process-layout {
+    display: grid;
+    grid-template-columns: minmax(280px, 0.75fr) minmax(0, 1.35fr);
+    align-items: start;
+    gap: 28px;
+}
+
+.kfz-process-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.kfz-process-sidebar-card,
+.kfz-process-form-wrapper {
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    box-shadow: var(--kfz-shadow-small);
+}
+
+.kfz-process-sidebar-card {
+    padding: 24px;
+}
+
+.kfz-process-sidebar-card h2,
+.kfz-process-form-header h2 {
+    margin: 0 0 8px;
+    color: var(--kfz-dark);
+    font-size: 1.35rem;
+    font-weight: 800;
+}
+
+.kfz-process-sidebar-card p,
+.kfz-process-form-header p {
+    margin: 0 0 22px;
+    color: var(--kfz-muted);
+    font-size: 0.92rem;
+}
+
+.kfz-process-options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.kfz-process-option {
+    display: grid;
+    grid-template-columns: 38px 1fr auto;
+    align-items: center;
+    gap: 11px;
+
+    padding: 12px;
+
+    background: var(--kfz-background);
+    border: 1px solid transparent;
+    border-radius: var(--kfz-radius-small);
+
+    transition:
+        background-color var(--kfz-transition),
+        border-color var(--kfz-transition),
+        transform var(--kfz-transition);
+}
+
+.kfz-process-option:hover,
+.kfz-process-option.is-selected {
+    background: var(--kfz-primary-light);
+    border-color: rgba(21, 94, 239, 0.22);
+    transform: translateX(3px);
+}
+
+.kfz-process-option-icon {
+    display: grid;
+    place-items: center;
+
+    width: 38px;
+    height: 38px;
+
+    background: var(--kfz-white);
+    color: var(--kfz-primary);
+    border-radius: 10px;
+}
+
+.kfz-process-option-icon svg {
+    width: 20px;
+    height: 20px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-process-option-text {
+    min-width: 0;
+}
+
+.kfz-process-option-text strong,
+.kfz-process-option-text small {
+    display: block;
+}
+
+.kfz-process-option-text strong {
+    color: var(--kfz-dark);
+    font-size: 0.9rem;
+}
+
+.kfz-process-option-text small {
+    margin-top: 2px;
+    overflow: hidden;
+
+    color: var(--kfz-muted);
+    font-size: 0.75rem;
+    line-height: 1.35;
+    text-overflow: ellipsis;
+}
+
+.kfz-process-option-arrow {
+    color: var(--kfz-primary);
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.kfz-process-info-card {
+    display: grid;
+    grid-template-columns: 34px 1fr;
+    gap: 12px;
+
+    padding: 18px;
+
+    background: var(--kfz-secondary-light);
+    border: 1px solid rgba(13, 148, 136, 0.18);
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-process-info-icon {
+    display: grid;
+    place-items: center;
+
+    width: 32px;
+    height: 32px;
+
+    background: var(--kfz-secondary);
+    color: var(--kfz-white);
+    border-radius: 50%;
+
+    font-weight: 800;
+}
+
+.kfz-process-info-card strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--kfz-dark);
+    font-size: 0.9rem;
+}
+
+.kfz-process-info-card p {
+    margin: 0 0 8px;
+    color: var(--kfz-muted);
+    font-size: 0.8rem;
+    line-height: 1.45;
+}
+
+.kfz-process-info-card a {
+    color: var(--kfz-secondary-dark);
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.kfz-process-form-wrapper {
+    overflow: hidden;
+}
+
+.kfz-process-form-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 28px 30px;
+
+    background:
+        linear-gradient(
+            135deg,
+            var(--kfz-primary-light),
+            var(--kfz-white)
+        );
+
+    border-bottom: 1px solid var(--kfz-border);
+}
+
+.kfz-process-form-header p {
+    margin-bottom: 0;
+}
+
+.kfz-process-step-badge {
+    flex-shrink: 0;
+
+    padding: 7px 11px;
+
+    background: var(--kfz-white);
+    color: var(--kfz-primary);
+    border: 1px solid rgba(21, 94, 239, 0.18);
+    border-radius: 999px;
+
+    font-size: 0.78rem;
+    font-weight: 800;
+}
+
+.kfz-process-form {
+    padding: 30px;
+}
+
+.kfz-form-fieldset {
+    padding: 0;
+    margin: 0 0 28px;
+
+    border: 0;
+}
+
+.kfz-form-fieldset legend {
+    width: 100%;
+    padding-bottom: 10px;
+    margin-bottom: 18px;
+
+    color: var(--kfz-dark);
+    border-bottom: 1px solid var(--kfz-border);
+
+    font-size: 1rem;
+    font-weight: 800;
+}
+
+.kfz-form-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 18px;
+}
+
+.kfz-form-grid-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.kfz-form-group {
+    margin-bottom: 0;
+}
+
+.kfz-form-optional {
+    color: var(--kfz-light-text);
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.kfz-form-textarea {
+    min-height: 110px;
+    resize: vertical;
+}
+
+.kfz-form-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+
+    padding: 15px;
+    margin-bottom: 26px;
+
+    background: #f9fafb;
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-small);
+}
+
+.kfz-form-checkbox input {
+    flex-shrink: 0;
+
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+
+    accent-color: var(--kfz-primary);
+}
+
+.kfz-form-checkbox label {
+    color: var(--kfz-muted);
+    font-size: 0.84rem;
+    line-height: 1.5;
+}
+
+.kfz-form-checkbox a {
+    color: var(--kfz-primary);
+    font-weight: 700;
+}
+
+.kfz-process-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+
+    padding-top: 22px;
+    border-top: 1px solid var(--kfz-border);
+}
+
+.kfz-process-error,
+.kfz-process-success {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+
+    padding: 20px;
+    margin-bottom: 25px;
+
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-process-error {
+    background: #fff1f0;
+    border: 1px solid #fecdca;
+    color: var(--kfz-danger);
+}
+
+.kfz-process-error h2 {
+    margin: 0 0 8px;
+    font-size: 1rem;
+}
+
+.kfz-process-error ul {
+    padding-left: 20px;
+    margin: 0;
+
+    color: #912018;
+    font-size: 0.9rem;
+}
+
+.kfz-process-success {
+    background: var(--kfz-secondary-light);
+    border: 1px solid rgba(13, 148, 136, 0.22);
+}
+
+.kfz-process-alert-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 38px;
+    height: 38px;
+
+    background: var(--kfz-success);
+    color: var(--kfz-white);
+    border-radius: 50%;
+
+    font-weight: 900;
+}
+
+.kfz-process-success h2 {
+    margin: 0 0 8px;
+    color: var(--kfz-dark);
+    font-size: 1.2rem;
+}
+
+.kfz-process-success p {
+    margin: 0 0 8px;
+    color: var(--kfz-muted);
+}
+
+.kfz-process-success .kfz-button {
+    margin-top: 15px;
+}
+
+
+@media (max-width: 900px) {
+
+    .kfz-process-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .kfz-process-sidebar {
+        order: 1;
+    }
+
+    .kfz-process-form-wrapper {
+        order: 2;
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .kfz-process-form-header {
+        display: block;
+        padding: 22px;
+    }
+
+    .kfz-process-step-badge {
+        display: inline-block;
+        margin-top: 12px;
+    }
+
+    .kfz-process-form {
+        padding: 22px;
+    }
+
+    .kfz-form-grid-two {
+        grid-template-columns: 1fr;
+    }
+
+    .kfz-process-form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .kfz-process-form-actions .kfz-button {
+        width: 100%;
+    }
+
+    .kfz-process-success {
+        flex-direction: column;
+    }
+
+}
+
+/* =========================================================
+   Login
+   ========================================================= */
+
+.kfz-login-page {
+    min-height: 70vh;
+    background:
+        radial-gradient(
+            circle at 10% 20%,
+            rgba(21, 94, 239, 0.08),
+            transparent 30%
+        ),
+        var(--kfz-background);
+}
+
+.kfz-login-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(360px, 480px);
+    align-items: center;
+    gap: 90px;
+
+    max-width: 1080px;
+    margin: 0 auto;
+}
+
+.kfz-login-intro {
+    max-width: 560px;
+}
+
+.kfz-login-intro .kfz-section-title {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+}
+
+.kfz-login-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 34px;
+}
+
+.kfz-login-benefit {
+    display: grid;
+    grid-template-columns: 46px 1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+.kfz-login-benefit-icon {
+    display: grid;
+    place-items: center;
+
+    width: 42px;
+    height: 42px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 12px;
+}
+
+.kfz-login-benefit-icon svg {
+    width: 22px;
+    height: 22px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-login-benefit strong {
+    display: block;
+    margin-bottom: 3px;
+
+    color: var(--kfz-dark);
+    font-size: 0.98rem;
+}
+
+.kfz-login-benefit p {
+    margin: 0;
+
+    color: var(--kfz-muted);
+    font-size: 0.88rem;
+    line-height: 1.5;
+}
+
+.kfz-login-card {
+    padding: 32px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    box-shadow: var(--kfz-shadow-large);
+}
+
+.kfz-login-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 28px;
+}
+
+.kfz-login-card-icon {
+    display: grid;
+    place-items: center;
+
+    width: 50px;
+    height: 50px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 15px;
+}
+
+.kfz-login-card-icon svg {
+    width: 26px;
+    height: 26px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-login-card-header h2 {
+    margin: 0;
+
+    color: var(--kfz-dark);
+    font-size: 1.45rem;
+    font-weight: 800;
+}
+
+.kfz-login-card-header p {
+    margin: 3px 0 0;
+
+    color: var(--kfz-muted);
+    font-size: 0.84rem;
+}
+
+.kfz-login-alert {
+    padding: 14px 16px;
+    margin-bottom: 22px;
+
+    background: #fff1f0;
+    border: 1px solid #fecdca;
+    border-radius: var(--kfz-radius-small);
+
+    color: var(--kfz-danger);
+    font-size: 0.86rem;
+}
+
+.kfz-login-alert strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.kfz-login-alert ul {
+    padding-left: 20px;
+    margin: 0;
+
+    color: #912018;
+}
+
+.kfz-login-password-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.kfz-login-forgot-link {
+    margin-bottom: 7px;
+
+    color: var(--kfz-primary);
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.kfz-login-forgot-link:hover {
+    color: var(--kfz-primary-dark);
+    text-decoration: underline;
+}
+
+.kfz-login-options {
+    margin: 2px 0 20px;
+}
+
+.kfz-login-remember {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    color: var(--kfz-muted);
+    font-size: 0.84rem;
+    cursor: pointer;
+}
+
+.kfz-login-remember input {
+    width: 17px;
+    height: 17px;
+    accent-color: var(--kfz-primary);
+}
+
+.kfz-login-divider {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    margin: 26px 0;
+
+    color: var(--kfz-light-text);
+    font-size: 0.78rem;
+}
+
+.kfz-login-divider::before,
+.kfz-login-divider::after {
+    flex: 1;
+    height: 1px;
+
+    content: "";
+    background: var(--kfz-border);
+}
+
+.kfz-login-register {
+    text-align: center;
+}
+
+.kfz-login-register p {
+    margin: 0 0 12px;
+
+    color: var(--kfz-muted);
+    font-size: 0.86rem;
+}
+
+.kfz-login-security-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    margin: 22px 0 0;
+
+    color: var(--kfz-muted);
+    font-size: 0.76rem;
+    text-align: center;
+}
+
+.kfz-login-security-note svg {
+    width: 16px;
+    height: 16px;
+
+    fill: none;
+    stroke: var(--kfz-success);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+
+@media (max-width: 900px) {
+
+    .kfz-login-layout {
+        grid-template-columns: 1fr;
+        gap: 42px;
+        max-width: 620px;
+    }
+
+    .kfz-login-intro {
+        max-width: none;
+        text-align: center;
+    }
+
+    .kfz-login-intro .kfz-section-title {
+        margin-right: auto;
+        margin-left: auto;
+    }
+
+    .kfz-login-benefits {
+        max-width: 440px;
+        margin-right: auto;
+        margin-left: auto;
+        text-align: left;
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .kfz-login-card {
+        padding: 22px;
+    }
+
+    .kfz-login-password-label {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .kfz-login-forgot-link {
+        margin-bottom: 12px;
+    }
+
+}
+
+/* =========================================================
+   Registrierung
+   ========================================================= */
+
+.kfz-register-page {
+    min-height: 70vh;
+
+    background:
+        radial-gradient(
+            circle at 85% 15%,
+            rgba(13, 148, 136, 0.08),
+            transparent 32%
+        ),
+        var(--kfz-background);
+}
+
+.kfz-register-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(380px, 520px);
+    align-items: center;
+    gap: 80px;
+
+    max-width: 1120px;
+    margin: 0 auto;
+}
+
+.kfz-register-intro {
+    max-width: 560px;
+}
+
+.kfz-register-intro .kfz-section-title {
+    font-size: clamp(2.2rem, 5vw, 4rem);
+}
+
+.kfz-register-benefits {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 34px;
+}
+
+.kfz-register-benefit {
+    display: grid;
+    grid-template-columns: 42px 1fr;
+    gap: 14px;
+    align-items: start;
+}
+
+.kfz-register-benefit-icon {
+    display: grid;
+    place-items: center;
+
+    width: 38px;
+    height: 38px;
+
+    background: var(--kfz-secondary-light);
+    color: var(--kfz-secondary);
+    border-radius: 50%;
+
+    font-weight: 900;
+}
+
+.kfz-register-benefit strong {
+    display: block;
+    margin-bottom: 3px;
+
+    color: var(--kfz-dark);
+    font-size: 0.98rem;
+}
+
+.kfz-register-benefit p {
+    margin: 0;
+
+    color: var(--kfz-muted);
+    font-size: 0.88rem;
+}
+
+.kfz-register-card {
+    padding: 32px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    box-shadow: var(--kfz-shadow-large);
+}
+
+.kfz-register-card-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 26px;
+}
+
+.kfz-register-card-icon {
+    display: grid;
+    place-items: center;
+
+    width: 50px;
+    height: 50px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 15px;
+
+    font-size: 1.8rem;
+    font-weight: 400;
+}
+
+.kfz-register-card-header h2 {
+    margin: 0;
+
+    color: var(--kfz-dark);
+    font-size: 1.45rem;
+    font-weight: 800;
+}
+
+.kfz-register-card-header p {
+    margin: 3px 0 0;
+
+    color: var(--kfz-muted);
+    font-size: 0.84rem;
+}
+
+.kfz-register-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.kfz-register-form .kfz-form-group {
+    margin-bottom: 0;
+}
+
+.kfz-register-checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+
+    padding: 14px;
+
+    background: #f9fafb;
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-small);
+}
+
+.kfz-register-checkbox input {
+    flex-shrink: 0;
+
+    width: 18px;
+    height: 18px;
+    margin-top: 3px;
+
+    accent-color: var(--kfz-primary);
+}
+
+.kfz-register-checkbox label {
+    color: var(--kfz-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+}
+
+.kfz-register-checkbox a {
+    color: var(--kfz-primary);
+    font-weight: 700;
+}
+
+.kfz-register-alert {
+    padding: 14px 16px;
+    margin-bottom: 22px;
+
+    background: #fff1f0;
+    border: 1px solid #fecdca;
+    border-radius: var(--kfz-radius-small);
+
+    color: var(--kfz-danger);
+    font-size: 0.86rem;
+}
+
+.kfz-register-alert strong {
+    display: block;
+    margin-bottom: 6px;
+}
+
+.kfz-register-alert ul {
+    padding-left: 20px;
+    margin: 0;
+
+    color: #912018;
+}
+
+.kfz-register-success {
+    padding: 18px;
+
+    background: var(--kfz-secondary-light);
+    border: 1px solid rgba(13, 148, 136, 0.22);
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-register-success strong {
+    display: block;
+    margin-bottom: 6px;
+
+    color: var(--kfz-secondary-dark);
+    font-size: 1rem;
+}
+
+.kfz-register-success p {
+    margin: 0 0 15px;
+
+    color: var(--kfz-muted);
+    font-size: 0.9rem;
+}
+
+.kfz-register-login-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    margin-top: 24px;
+
+    color: var(--kfz-muted);
+    font-size: 0.84rem;
+    text-align: center;
+}
+
+.kfz-register-login-link a {
+    color: var(--kfz-primary);
+    font-weight: 700;
+}
+
+.kfz-register-login-link a:hover {
+    text-decoration: underline;
+}
+
+
+@media (max-width: 900px) {
+
+    .kfz-register-layout {
+        grid-template-columns: 1fr;
+        gap: 42px;
+        max-width: 620px;
+    }
+
+    .kfz-register-intro {
+        max-width: none;
+        text-align: center;
+    }
+
+    .kfz-register-benefits {
+        max-width: 440px;
+        margin-right: auto;
+        margin-left: auto;
+        text-align: left;
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .kfz-register-card {
+        padding: 22px;
+    }
+
+    .kfz-register-login-link {
+        align-items: center;
+        flex-direction: column;
+    }
+
+}
+
+/* =========================================================
+   Benutzerkonto
+   ========================================================= */
+
+.kfz-account-page {
+    min-height: 70vh;
+    background: var(--kfz-background);
+}
+
+.kfz-account-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 28px;
+    margin-bottom: 36px;
+}
+
+.kfz-account-welcome {
+    max-width: 700px;
+}
+
+.kfz-account-user-badge {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    padding: 10px 14px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: 999px;
+    box-shadow: var(--kfz-shadow-small);
+}
+
+.kfz-account-avatar {
+    display: grid;
+    place-items: center;
+
+    width: 42px;
+    height: 42px;
+
+    background: linear-gradient(
+        135deg,
+        var(--kfz-primary),
+        var(--kfz-secondary)
+    );
+
+    color: var(--kfz-white);
+    border-radius: 50%;
+
+    font-size: 0.82rem;
+    font-weight: 800;
+}
+
+.kfz-account-user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.kfz-account-user-info strong {
+    color: var(--kfz-dark);
+    font-size: 0.88rem;
+}
+
+.kfz-account-user-info small {
+    max-width: 220px;
+    overflow: hidden;
+
+    color: var(--kfz-muted);
+    font-size: 0.76rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.kfz-account-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    margin-bottom: 28px;
+}
+
+.kfz-account-action-card {
+    display: flex;
+    flex-direction: column;
+    min-height: 260px;
+}
+
+.kfz-account-action-card .kfz-card-text {
+    flex: 1;
+}
+
+.kfz-account-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
+    margin-top: 22px;
+
+    color: var(--kfz-primary);
+    font-size: 0.88rem;
+    font-weight: 800;
+}
+
+.kfz-account-card-link span {
+    font-size: 1.2rem;
+    transition: transform var(--kfz-transition);
+}
+
+.kfz-account-action-card:hover
+.kfz-account-card-link span {
+    transform: translateX(4px);
+}
+
+.kfz-account-content-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 20px;
+}
+
+.kfz-account-profile,
+.kfz-account-security {
+    min-height: 280px;
+}
+
+.kfz-account-card-heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+
+    margin-bottom: 24px;
+}
+
+.kfz-account-profile-icon,
+.kfz-account-security-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 42px;
+    height: 42px;
+
+    border-radius: 12px;
+}
+
+.kfz-account-profile-icon {
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+}
+
+.kfz-account-security-icon {
+    background: #eafaf1;
+    color: var(--kfz-success);
+
+    font-size: 1.25rem;
+    font-weight: 900;
+}
+
+.kfz-account-profile-icon svg {
+    width: 22px;
+    height: 22px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-account-data-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.kfz-account-data-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding: 13px 0;
+
+    border-bottom: 1px solid var(--kfz-border);
+}
+
+.kfz-account-data-row:first-child {
+    padding-top: 0;
+}
+
+.kfz-account-data-row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.kfz-account-data-row span {
+    color: var(--kfz-muted);
+    font-size: 0.86rem;
+}
+
+.kfz-account-data-row strong {
+    color: var(--kfz-dark);
+    font-size: 0.88rem;
+    text-align: right;
+}
+
+.kfz-account-login-time {
+    padding: 12px 14px;
+    margin: 20px 0;
+
+    background: var(--kfz-background);
+    border-radius: var(--kfz-radius-small);
+
+    color: var(--kfz-muted);
+    font-size: 0.84rem;
+}
+
+.kfz-account-login-time strong {
+    color: var(--kfz-dark);
+}
+
+.kfz-account-logout-button {
+    width: max-content;
+}
+
+.kfz-account-information {
+    display: flex;
+    align-items: flex-start;
+    gap: 13px;
+
+    padding: 18px;
+    margin-top: 28px;
+
+    background: var(--kfz-secondary-light);
+    border: 1px solid rgba(13, 148, 136, 0.18);
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-account-information-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 30px;
+    height: 30px;
+
+    background: var(--kfz-secondary);
+    color: var(--kfz-white);
+    border-radius: 50%;
+
+    font-weight: 800;
+}
+
+.kfz-account-information strong {
+    display: block;
+    margin-bottom: 4px;
+
+    color: var(--kfz-dark);
+    font-size: 0.9rem;
+}
+
+.kfz-account-information p {
+    margin: 0;
+
+    color: var(--kfz-muted);
+    font-size: 0.84rem;
+    line-height: 1.5;
+}
+
+.kfz-account-locked {
+    max-width: 620px;
+    padding: 64px 32px;
+    margin: 0 auto;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    box-shadow: var(--kfz-shadow-medium);
+    text-align: center;
+}
+
+.kfz-account-locked-icon {
+    display: grid;
+    place-items: center;
+
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 22px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 18px;
+}
+
+.kfz-account-locked-icon svg {
+    width: 30px;
+    height: 30px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-account-locked .kfz-section-title {
+    margin-bottom: 14px;
+}
+
+.kfz-account-locked-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+
+@media (max-width: 900px) {
+
+    .kfz-account-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .kfz-account-user-badge {
+        border-radius: var(--kfz-radius-medium);
+    }
+
+    .kfz-account-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .kfz-account-content-grid {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .kfz-account-user-badge {
+        width: 100%;
+    }
+
+    .kfz-account-user-info small {
+        max-width: calc(100vw - 120px);
+    }
+
+    .kfz-account-card-heading {
+        margin-bottom: 20px;
+    }
+
+    .kfz-account-data-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .kfz-account-data-row strong {
+        text-align: left;
+    }
+
+    .kfz-account-logout-button {
+        width: 100%;
+    }
+
+    .kfz-account-locked {
+        padding: 42px 22px;
+    }
+
+    .kfz-account-locked-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kfz-account-locked-actions .kfz-button {
+        width: 100%;
+    }
+
+}
+
+/* =========================================================
+   Fahrzeugverwaltung
+   ========================================================= */
+
+.kfz-vehicles-page {
+    min-height: 70vh;
+    background: var(--kfz-background);
+}
+
+.kfz-vehicles-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 28px;
+    margin-bottom: 34px;
+}
+
+.kfz-vehicle-form-card {
+    margin-bottom: 28px;
+}
+
+.kfz-vehicle-form-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 20px;
+
+    padding-bottom: 22px;
+    margin-bottom: 25px;
+
+    border-bottom: 1px solid var(--kfz-border);
+}
+
+.kfz-vehicle-form-header .kfz-card-title {
+    margin-bottom: 5px;
+}
+
+.kfz-vehicle-form-header .kfz-card-text {
+    margin: 0;
+}
+
+.kfz-vehicle-close {
+    display: grid;
+    place-items: center;
+
+    width: 34px;
+    height: 34px;
+
+    color: var(--kfz-muted);
+    border: 1px solid var(--kfz-border);
+    border-radius: 50%;
+
+    font-size: 1.5rem;
+    line-height: 1;
+
+    transition:
+        color var(--kfz-transition),
+        background-color var(--kfz-transition),
+        border-color var(--kfz-transition);
+}
+
+.kfz-vehicle-close:hover {
+    background: #fff1f0;
+    color: var(--kfz-danger);
+    border-color: #fecdca;
+}
+
+.kfz-vehicle-form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 12px;
+
+    padding-top: 22px;
+    border-top: 1px solid var(--kfz-border);
+}
+
+.kfz-vehicle-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.kfz-vehicle-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 24px;
+
+    padding: 24px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    box-shadow: var(--kfz-shadow-small);
+
+    transition:
+        border-color var(--kfz-transition),
+        box-shadow var(--kfz-transition),
+        transform var(--kfz-transition);
+}
+
+.kfz-vehicle-card:hover {
+    border-color: rgba(21, 94, 239, 0.25);
+    box-shadow: var(--kfz-shadow-medium);
+    transform: translateY(-2px);
+}
+
+.kfz-vehicle-card-main {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+    min-width: 0;
+}
+
+.kfz-vehicle-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 52px;
+    height: 52px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 15px;
+}
+
+.kfz-vehicle-icon svg {
+    width: 27px;
+    height: 27px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-vehicle-card-content {
+    min-width: 0;
+}
+
+.kfz-vehicle-card-title-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 18px;
+}
+
+.kfz-vehicle-card h2 {
+    margin: 0 0 9px;
+
+    color: var(--kfz-dark);
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.kfz-license-plate {
+    display: inline-block;
+
+    padding: 5px 10px;
+
+    background: #f9fafb;
+    color: var(--kfz-dark);
+    border: 1px solid var(--kfz-border-dark);
+    border-radius: 5px;
+
+    font-size: 0.86rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+}
+
+.kfz-vehicle-details {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 22px;
+    margin-top: 20px;
+}
+
+.kfz-vehicle-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.kfz-vehicle-detail span {
+    color: var(--kfz-muted);
+    font-size: 0.75rem;
+}
+
+.kfz-vehicle-detail strong {
+    color: var(--kfz-dark);
+    font-size: 0.86rem;
+}
+
+.kfz-vehicle-card-actions {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    gap: 9px;
+}
+
+.kfz-vehicle-card-actions form {
+    margin: 0;
+}
+
+.kfz-button-danger {
+    background: #fff1f0;
+    color: var(--kfz-danger);
+    border-color: #fecdca;
+}
+
+.kfz-button-danger:hover {
+    background: var(--kfz-danger);
+    color: var(--kfz-white);
+    border-color: var(--kfz-danger);
+}
+
+.kfz-vehicles-empty {
+    max-width: 620px;
+    padding: 58px 30px;
+    margin: 0 auto;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    box-shadow: var(--kfz-shadow-small);
+    text-align: center;
+}
+
+.kfz-vehicles-empty-icon {
+    display: grid;
+    place-items: center;
+
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 20px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 20px;
+}
+
+.kfz-vehicles-empty-icon svg {
+    width: 34px;
+    height: 34px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-vehicles-empty h2 {
+    margin: 0 0 10px;
+
+    color: var(--kfz-dark);
+    font-size: 1.3rem;
+}
+
+.kfz-vehicles-empty p {
+    max-width: 480px;
+    margin: 0 auto 24px;
+
+    color: var(--kfz-muted);
+}
+
+
+/* Responsive */
+
+@media (max-width: 800px) {
+
+    .kfz-vehicles-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kfz-vehicles-header .kfz-button {
+        width: 100%;
+    }
+
+    .kfz-vehicle-card {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kfz-vehicle-card-actions {
+        justify-content: flex-start;
+        padding-top: 18px;
+        border-top: 1px solid var(--kfz-border);
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .kfz-vehicle-form-card {
+        padding: 22px;
+    }
+
+    .kfz-vehicle-form-header {
+        gap: 12px;
+    }
+
+    .kfz-vehicle-card {
+        padding: 20px;
+    }
+
+    .kfz-vehicle-card-main {
+        gap: 13px;
+    }
+
+    .kfz-vehicle-card-title-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .kfz-vehicle-details {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .kfz-vehicle-form-actions {
+        align-items: stretch;
+        flex-direction: column-reverse;
+    }
+
+    .kfz-vehicle-form-actions .kfz-button,
+    .kfz-vehicle-card-actions .kfz-button {
+        width: 100%;
+    }
+
+    .kfz-vehicle-card-actions {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kfz-vehicles-empty {
+        padding: 42px 22px;
+    }
+
+}
+
+/* =========================================================
+   Meine Vorgänge
+   ========================================================= */
+
+.kfz-applications-page {
+    min-height: 70vh;
+    background: var(--kfz-background);
+}
+
+.kfz-applications-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 28px;
+    margin-bottom: 34px;
+}
+
+.kfz-application-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.kfz-application-card {
+    padding: 24px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    box-shadow: var(--kfz-shadow-small);
+
+    transition:
+        border-color var(--kfz-transition),
+        box-shadow var(--kfz-transition),
+        transform var(--kfz-transition);
+}
+
+.kfz-application-card:hover {
+    border-color: rgba(21, 94, 239, 0.25);
+    box-shadow: var(--kfz-shadow-medium);
+    transform: translateY(-2px);
+}
+
+.kfz-application-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.kfz-application-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 48px;
+    height: 48px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 14px;
+}
+
+.kfz-application-icon svg {
+    width: 24px;
+    height: 24px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-application-title {
+    flex: 1;
+    min-width: 0;
+}
+
+.kfz-application-title .kfz-section-kicker {
+    margin-bottom: 3px;
+    font-size: 0.7rem;
+}
+
+.kfz-application-title h2 {
+    margin: 0;
+
+    color: var(--kfz-dark);
+    font-size: 1.15rem;
+    font-weight: 800;
+}
+
+.kfz-application-card-top .kfz-status {
+    flex-shrink: 0;
+}
+
+.kfz-application-details {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 18px;
+
+    padding: 22px 0;
+    margin-top: 20px;
+
+    border-top: 1px solid var(--kfz-border);
+    border-bottom: 1px solid var(--kfz-border);
+}
+
+.kfz-application-detail {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.kfz-application-detail span {
+    color: var(--kfz-muted);
+    font-size: 0.76rem;
+}
+
+.kfz-application-detail strong {
+    color: var(--kfz-dark);
+    font-size: 0.9rem;
+}
+
+.kfz-application-card-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+
+    padding-top: 18px;
+}
+
+.kfz-application-info {
+    color: var(--kfz-muted);
+    font-size: 0.82rem;
+}
+
+.kfz-application-info strong {
+    color: var(--kfz-dark);
+}
+
+.kfz-applications-empty {
+    max-width: 620px;
+    padding: 60px 30px;
+    margin: 0 auto;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    box-shadow: var(--kfz-shadow-small);
+    text-align: center;
+}
+
+.kfz-applications-empty-icon {
+    display: grid;
+    place-items: center;
+
+    width: 68px;
+    height: 68px;
+    margin: 0 auto 20px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 20px;
+}
+
+.kfz-applications-empty-icon svg {
+    width: 34px;
+    height: 34px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-applications-empty h2 {
+    margin: 0 0 10px;
+
+    color: var(--kfz-dark);
+    font-size: 1.3rem;
+}
+
+.kfz-applications-empty p {
+    margin: 0 0 24px;
+
+    color: var(--kfz-muted);
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Vorgangsnummer
+|--------------------------------------------------------------------------
+*/
+
+.kfz-application-number {
+    display: inline-block;
+
+    padding: 10px 14px;
+    margin-top: 10px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+
+    border-radius: var(--kfz-radius-small);
+
+    font-size: 0.9rem;
+}
+
+.kfz-application-number strong {
+    font-weight: 800;
+}
+
+
+@media (max-width: 760px) {
+
+    .kfz-applications-header {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kfz-applications-header .kfz-button {
+        width: 100%;
+    }
+
+    .kfz-application-card-top {
+        flex-wrap: wrap;
+    }
+
+    .kfz-application-card-top .kfz-status {
+        width: 100%;
+        margin-left: 63px;
+    }
+
+    .kfz-application-details {
+        grid-template-columns: 1fr;
+        gap: 13px;
+    }
+
+}
+
+
+@media (max-width: 576px) {
+
+    .kfz-application-card {
+        padding: 20px;
+    }
+
+    .kfz-application-card-bottom {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kfz-application-card-bottom .kfz-button {
+        width: 100%;
+    }
+
+    .kfz-applications-empty {
+        padding: 42px 22px;
+    }
+
+}
+
+/* =========================================================
+   Hilfe
+   ========================================================= */
+
+.kfz-help-page {
+    min-height: 70vh;
+    background: var(--kfz-background);
+}
+
+.kfz-help-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+
+    padding: 42px;
+    margin-bottom: 28px;
+
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(13, 148, 136, 0.16),
+            transparent 34%
+        ),
+        linear-gradient(
+            135deg,
+            var(--kfz-primary-light),
+            var(--kfz-white)
+        );
+
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+}
+
+.kfz-help-hero-content {
+    max-width: 760px;
+}
+
+.kfz-help-hero-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 92px;
+    height: 92px;
+
+    background: var(--kfz-white);
+    color: var(--kfz-primary);
+    border: 1px solid rgba(21, 94, 239, 0.15);
+    border-radius: 28px;
+    box-shadow: var(--kfz-shadow-medium);
+}
+
+.kfz-help-hero-icon svg {
+    width: 48px;
+    height: 48px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-help-search-card {
+    padding: 24px;
+    margin-bottom: 58px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-medium);
+    box-shadow: var(--kfz-shadow-small);
+}
+
+.kfz-help-search-form {
+    margin: 0;
+}
+
+.kfz-help-search-form .kfz-form-label {
+    margin-bottom: 10px;
+}
+
+.kfz-help-search-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.kfz-help-search-input-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.kfz-help-search-input-wrapper .kfz-form-control {
+    padding-left: 44px;
+}
+
+.kfz-help-search-icon {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 14px;
+
+    width: 20px;
+    height: 20px;
+
+    color: var(--kfz-muted);
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.kfz-help-section {
+    margin-bottom: 68px;
+}
+
+.kfz-help-section .kfz-section-header {
+    margin-bottom: 28px;
+}
+
+.kfz-help-quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+}
+
+.kfz-help-quick-card {
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    align-items: center;
+    gap: 14px;
+
+    padding: 17px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-medium);
+    box-shadow: var(--kfz-shadow-small);
+
+    transition:
+        border-color var(--kfz-transition),
+        box-shadow var(--kfz-transition),
+        transform var(--kfz-transition);
+}
+
+.kfz-help-quick-card:hover {
+    border-color: rgba(21, 94, 239, 0.24);
+    box-shadow: var(--kfz-shadow-medium);
+    transform: translateY(-2px);
+}
+
+.kfz-help-quick-icon {
+    display: grid;
+    place-items: center;
+
+    width: 48px;
+    height: 48px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 14px;
+}
+
+.kfz-help-quick-icon-teal {
+    background: var(--kfz-secondary-light);
+    color: var(--kfz-secondary);
+}
+
+.kfz-help-quick-icon-purple {
+    background: #f3edff;
+    color: #7c3aed;
+}
+
+.kfz-help-quick-icon-orange {
+    background: #fff4e5;
+    color: #d97706;
+}
+
+.kfz-help-quick-icon svg {
+    width: 24px;
+    height: 24px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-help-quick-card strong,
+.kfz-help-quick-card small {
+    display: block;
+}
+
+.kfz-help-quick-card strong {
+    color: var(--kfz-dark);
+    font-size: 0.94rem;
+}
+
+.kfz-help-quick-card small {
+    margin-top: 3px;
+    color: var(--kfz-muted);
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.kfz-help-arrow {
+    color: var(--kfz-primary);
+    font-size: 1.25rem;
+    font-weight: 800;
+}
+
+.kfz-faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-width: 900px;
+}
+
+.kfz-faq-item {
+    overflow: hidden;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    width: 100%;
+    padding: 19px 21px;
+
+    background: transparent;
+    color: var(--kfz-dark);
+    border: 0;
+
+    font-size: 0.98rem;
+    font-weight: 750;
+    text-align: left;
+
+    transition:
+        background-color var(--kfz-transition),
+        color var(--kfz-transition);
+}
+
+.kfz-faq-question:hover,
+.kfz-faq-question[aria-expanded="true"] {
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+}
+
+.kfz-faq-question-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 27px;
+    height: 27px;
+
+    color: var(--kfz-primary);
+    border: 1px solid currentColor;
+    border-radius: 50%;
+
+    font-size: 1.15rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.kfz-faq-answer {
+    padding: 0 21px 20px;
+}
+
+.kfz-faq-answer p {
+    max-width: 780px;
+    padding-top: 17px;
+    margin: 0;
+
+    border-top: 1px solid var(--kfz-border);
+
+    color: var(--kfz-muted);
+    font-size: 0.91rem;
+    line-height: 1.65;
+}
+
+.kfz-help-no-results {
+    max-width: 620px;
+    padding: 48px 28px;
+    margin: 0 auto;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    text-align: center;
+}
+
+.kfz-help-no-results-icon {
+    display: grid;
+    place-items: center;
+
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 17px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 50%;
+
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.kfz-help-no-results h3 {
+    margin: 0 0 8px;
+
+    color: var(--kfz-dark);
+    font-size: 1.15rem;
+}
+
+.kfz-help-no-results p {
+    margin: 0 0 20px;
+    color: var(--kfz-muted);
+}
+
+.kfz-help-steps {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 18px;
+}
+
+.kfz-help-step {
+    padding: 22px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-help-step-number {
+    display: grid;
+    place-items: center;
+
+    width: 40px;
+    height: 40px;
+    margin-bottom: 17px;
+
+    background: var(--kfz-primary);
+    color: var(--kfz-white);
+    border-radius: 50%;
+
+    font-weight: 800;
+}
+
+.kfz-help-step h3 {
+    margin: 0 0 8px;
+
+    color: var(--kfz-dark);
+    font-size: 1rem;
+}
+
+.kfz-help-step p {
+    margin: 0;
+
+    color: var(--kfz-muted);
+    font-size: 0.87rem;
+    line-height: 1.5;
+}
+
+.kfz-help-contact {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 20px;
+
+    padding: 28px;
+    margin-top: 20px;
+
+    background: var(--kfz-dark);
+    border-radius: var(--kfz-radius-large);
+    color: var(--kfz-white);
+}
+
+.kfz-help-contact-icon {
+    display: grid;
+    place-items: center;
+
+    width: 54px;
+    height: 54px;
+
+    background: rgba(255, 255, 255, 0.12);
+    color: #9bc1ff;
+    border-radius: 15px;
+}
+
+.kfz-help-contact-icon svg {
+    width: 28px;
+    height: 28px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-help-contact .kfz-section-kicker {
+    color: #9bc1ff;
+}
+
+.kfz-help-contact h2 {
+    margin: 0 0 6px;
+    color: var(--kfz-white);
+    font-size: 1.2rem;
+}
+
+.kfz-help-contact p {
+    margin: 0;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.88rem;
+}
+
+
+/* Responsive */
+
+@media (max-width: 900px) {
+
+    .kfz-help-steps {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kfz-help-contact {
+        grid-template-columns: auto 1fr;
+    }
+
+    .kfz-help-contact .kfz-button {
+        grid-column: 1 / -1;
+        width: max-content;
+    }
+
+}
+
+
+@media (max-width: 650px) {
+
+    .kfz-help-hero {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 28px 22px;
+    }
+
+    .kfz-help-hero-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+    }
+
+    .kfz-help-hero-icon svg {
+        width: 34px;
+        height: 34px;
+    }
+
+    .kfz-help-search-card {
+        padding: 18px;
+    }
+
+    .kfz-help-search-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kfz-help-search-row .kfz-button {
+        width: 100%;
+    }
+
+    .kfz-help-quick-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .kfz-help-steps {
+        grid-template-columns: 1fr;
+    }
+
+    .kfz-help-contact {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .kfz-help-contact-icon {
+        margin: 0 auto;
+    }
+
+    .kfz-help-contact .kfz-button {
+        width: 100%;
+    }
+
+}
+
+/* =========================================================
+   FAQ
+   ========================================================= */
+
+.kfz-faq-page {
+    min-height: 70vh;
+    background: var(--kfz-background);
+}
+
+.kfz-faq-hero {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 30px;
+
+    padding: 42px;
+    margin-bottom: 28px;
+
+    background:
+        radial-gradient(
+            circle at 85% 20%,
+            rgba(13, 148, 136, 0.16),
+            transparent 34%
+        ),
+        linear-gradient(
+            135deg,
+            var(--kfz-primary-light),
+            var(--kfz-white)
+        );
+
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+}
+
+.kfz-faq-hero-content {
+    max-width: 760px;
+}
+
+.kfz-faq-hero-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 92px;
+    height: 92px;
+
+    background: var(--kfz-white);
+    color: var(--kfz-primary);
+    border: 1px solid rgba(21, 94, 239, 0.15);
+    border-radius: 28px;
+    box-shadow: var(--kfz-shadow-medium);
+}
+
+.kfz-faq-hero-icon svg {
+    width: 48px;
+    height: 48px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-faq-search-card {
+    padding: 24px;
+    margin-bottom: 20px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-medium);
+    box-shadow: var(--kfz-shadow-small);
+}
+
+.kfz-faq-search-form {
+    margin: 0;
+}
+
+.kfz-faq-search-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.kfz-faq-search-input-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.kfz-faq-search-input-wrapper .kfz-form-control {
+    padding-left: 44px;
+}
+
+.kfz-faq-search-icon {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 14px;
+
+    width: 20px;
+    height: 20px;
+
+    color: var(--kfz-muted);
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.kfz-faq-categories {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin-bottom: 38px;
+}
+
+.kfz-faq-category-link {
+    display: inline-flex;
+    align-items: center;
+
+    padding: 8px 13px;
+
+    background: var(--kfz-white);
+    color: var(--kfz-muted);
+    border: 1px solid var(--kfz-border);
+    border-radius: 999px;
+
+    font-size: 0.82rem;
+    font-weight: 700;
+
+    transition:
+        color var(--kfz-transition),
+        background-color var(--kfz-transition),
+        border-color var(--kfz-transition);
+}
+
+.kfz-faq-category-link:hover,
+.kfz-faq-category-link.is-active {
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-color: rgba(21, 94, 239, 0.24);
+}
+
+.kfz-faq-result-info {
+    padding: 13px 16px;
+    margin-bottom: 28px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: var(--kfz-radius-small);
+
+    font-size: 0.88rem;
+}
+
+.kfz-faq-result-info strong {
+    font-weight: 800;
+}
+
+.kfz-faq-result-info span {
+    color: var(--kfz-muted);
+}
+
+.kfz-faq-content {
+    max-width: 920px;
+}
+
+.kfz-faq-category {
+    margin-bottom: 52px;
+}
+
+.kfz-faq-category-header {
+    margin-bottom: 20px;
+}
+
+.kfz-faq-category-header h2 {
+    margin: 0;
+
+    color: var(--kfz-dark);
+    font-size: 1.5rem;
+    font-weight: 800;
+}
+
+.kfz-faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.kfz-faq-item {
+    overflow: hidden;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-medium);
+}
+
+.kfz-faq-question {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+
+    width: 100%;
+    padding: 20px 22px;
+
+    background: transparent;
+    color: var(--kfz-dark);
+    border: 0;
+
+    font-size: 0.98rem;
+    font-weight: 750;
+    text-align: left;
+
+    transition:
+        background-color var(--kfz-transition),
+        color var(--kfz-transition);
+}
+
+.kfz-faq-question:hover,
+.kfz-faq-question[aria-expanded="true"] {
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+}
+
+.kfz-faq-question:focus-visible {
+    position: relative;
+    z-index: 1;
+
+    outline: 3px solid rgba(21, 94, 239, 0.25);
+    outline-offset: -3px;
+}
+
+.kfz-faq-question-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+
+    width: 28px;
+    height: 28px;
+
+    color: var(--kfz-primary);
+    border: 1px solid currentColor;
+    border-radius: 50%;
+
+    font-size: 1.15rem;
+    font-weight: 500;
+    line-height: 1;
+}
+
+.kfz-faq-answer {
+    padding: 0 22px 21px;
+}
+
+.kfz-faq-answer p {
+    padding-top: 17px;
+    margin: 0;
+
+    border-top: 1px solid var(--kfz-border);
+
+    color: var(--kfz-muted);
+    font-size: 0.92rem;
+    line-height: 1.65;
+}
+
+.kfz-faq-no-results {
+    max-width: 650px;
+    padding: 50px 30px;
+    margin: 0 auto 52px;
+
+    background: var(--kfz-white);
+    border: 1px solid var(--kfz-border);
+    border-radius: var(--kfz-radius-large);
+    text-align: center;
+}
+
+.kfz-faq-no-results-icon {
+    display: grid;
+    place-items: center;
+
+    width: 54px;
+    height: 54px;
+    margin: 0 auto 18px;
+
+    background: var(--kfz-primary-light);
+    color: var(--kfz-primary);
+    border-radius: 50%;
+
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+
+.kfz-faq-no-results h2 {
+    margin: 0 0 9px;
+
+    color: var(--kfz-dark);
+    font-size: 1.25rem;
+}
+
+.kfz-faq-no-results p {
+    margin: 0 0 22px;
+    color: var(--kfz-muted);
+}
+
+.kfz-faq-no-results-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.kfz-faq-contact {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 20px;
+
+    padding: 28px;
+    margin-top: 10px;
+
+    background: var(--kfz-dark);
+    color: var(--kfz-white);
+    border-radius: var(--kfz-radius-large);
+}
+
+.kfz-faq-contact-icon {
+    display: grid;
+    place-items: center;
+
+    width: 54px;
+    height: 54px;
+
+    background: rgba(255, 255, 255, 0.12);
+    color: #9bc1ff;
+    border-radius: 15px;
+}
+
+.kfz-faq-contact-icon svg {
+    width: 28px;
+    height: 28px;
+
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.7;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.kfz-faq-contact .kfz-section-kicker {
+    color: #9bc1ff;
+}
+
+.kfz-faq-contact h2 {
+    margin: 0 0 6px;
+
+    color: var(--kfz-white);
+    font-size: 1.2rem;
+}
+
+.kfz-faq-contact p {
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.88rem;
+}
+
+
+@media (max-width: 700px) {
+
+    .kfz-faq-hero {
+        align-items: flex-start;
+        flex-direction: column;
+        padding: 28px 22px;
+    }
+
+    .kfz-faq-hero-icon {
+        width: 64px;
+        height: 64px;
+        border-radius: 18px;
+    }
+
+    .kfz-faq-hero-icon svg {
+        width: 34px;
+        height: 34px;
+    }
+
+    .kfz-faq-search-card {
+        padding: 18px;
+    }
+
+    .kfz-faq-search-row {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .kfz-faq-search-row .kfz-button {
+        width: 100%;
+    }
+
+    .kfz-faq-question {
+        padding: 17px;
+    }
+
+    .kfz-faq-answer {
+        padding: 0 17px 18px;
+    }
+
+    .kfz-faq-contact {
+        grid-template-columns: 1fr;
+        text-align: center;
+    }
+
+    .kfz-faq-contact-icon {
+        margin: 0 auto;
+    }
+
+    .kfz-faq-contact .kfz-button {
+        width: 100%;
+    }
+
+}

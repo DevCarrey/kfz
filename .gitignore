@@ -1,0 +1,41 @@
+# Lokale Zugangsdaten und Umgebungsvariablen
+.env
+.env.*
+!.env.example
+config.local.php
+database.local.php
+
+# Private Dokumente und Laufzeitdaten
+storage/documents/*
+!storage/documents/.gitkeep
+storage/logs/*
+!storage/logs/.gitkeep
+storage/cache/*
+!storage/cache/.gitkeep
+
+# Abhängigkeiten und Testausgaben
+/vendor/
+/node_modules/
+/coverage/
+/phpunit.xml
+
+# Lokale Entwicklungs- und Editor-Dateien
+/.idea/
+/.vscode/
+*.code-workspace
+*.suo
+*.user
+
+# Betriebssystemdateien
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Lokale Sicherungen, Exporte und temporäre Dateien
+*.bak
+*.tmp
+*.log
+*.sql.gz
+*.zip
+*.tar.gz
+public/assets/assets.bak_*/

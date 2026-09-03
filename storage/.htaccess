@@ -1,0 +1,3 @@
+# Speicherdateien dürfen niemals direkt über Apache ausgeliefert werden.
+# Ein späterer Download erfolgt ausschließlich über einen autorisierten PHP-Endpunkt.
+Require all denied
