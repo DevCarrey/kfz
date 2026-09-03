@@ -1,25 +1,15 @@
-<?php
+﻿<?php
 declare(strict_types=1);
 
-/*
- * Lokale Zugangsdaten gehören in database.local.php. Diese Datei wird durch
- * .gitignore nicht versioniert. Ohne Override bleiben die sicheren XAMPP-
- * Entwicklungsstandardwerte aktiv.
+/**
+ * Kfz Digital – zentrale PDO-Datenbankverbindung
  */
-$localConfigFile = __DIR__ . '/database.local.php';
-$localConfig = is_file($localConfigFile)
-    ? require $localConfigFile
-    : [];
 
-if (!is_array($localConfig)) {
-    $localConfig = [];
-}
-
-$databaseHost = (string)($localConfig['host'] ?? '127.0.0.1');
-$databaseName = (string)($localConfig['name'] ?? 'kfz_digital');
-$databaseUser = (string)($localConfig['user'] ?? 'root');
-$databasePassword = (string)($localConfig['password'] ?? '');
-$databaseCharset = (string)($localConfig['charset'] ?? 'utf8mb4');
+$databaseHost = '127.0.0.1';
+$databaseName = 'kfz_digital';
+$databaseUser = 'root';
+$databasePassword = '';
+$databaseCharset = 'utf8mb4';
 
 $databaseDsn = sprintf(
     'mysql:host=%s;dbname=%s;charset=%s',
@@ -29,7 +19,6 @@ $databaseDsn = sprintf(
 );
 
 try {
-
     $databaseConnection = new PDO(
         $databaseDsn,
         $databaseUser,
@@ -44,7 +33,6 @@ try {
     return $databaseConnection;
 
 } catch (PDOException $exception) {
-
     http_response_code(500);
 
     exit(
