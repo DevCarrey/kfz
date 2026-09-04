@@ -41,3 +41,5 @@ desktop.ini
 public/assets/assets.bak_*/
 /src/Config/database.php
 /src/Config/payment.php
+/src/Config/stripe.php
+/src/Config/ikfz.php
