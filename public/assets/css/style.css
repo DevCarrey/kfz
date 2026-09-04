@@ -4484,3 +4484,82 @@ button {
     }
 
 }
+
+.kfz-verification-code {
+    margin: 1rem 0;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: .25rem;
+    font-variant-numeric: tabular-nums;
+}
+
+/* =====================================================
+   Kennzeichen-Eingabe
+   ===================================================== */
+
+.kfz-license-plate {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+    width: 100%;
+    max-width: 430px;
+}
+
+.kfz-license-input {
+    text-align: center;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+}
+
+.kfz-license-city {
+    width: 92px;
+}
+
+.kfz-license-letters {
+    width: 82px;
+}
+
+.kfz-license-numbers {
+    width: 110px;
+    text-transform: none;
+}
+
+.kfz-license-separator {
+    color: #202522;
+    font-size: 1.5rem;
+    font-weight: 800;
+    line-height: 1;
+}
+
+.kfz-verification-code {
+    margin: 1rem 0;
+    color: #202522;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: .25rem;
+    font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 480px) {
+    .kfz-license-plate {
+        gap: .3rem;
+        max-width: 100%;
+    }
+
+    .kfz-license-city {
+        width: 76px;
+    }
+
+    .kfz-license-letters {
+        width: 66px;
+    }
+
+    .kfz-license-numbers {
+        width: 86px;
+    }
+
+    .kfz-license-separator {
+        font-size: 1.2rem;
+    }
+}

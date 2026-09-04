@@ -4,12 +4,11 @@ declare(strict_types=1);
 require_once __DIR__ . '/../../Support/view_helpers.php';
 
 $url = static fn (string $path): string => kfz_url($path);
-
-$escape = static fn (string $value): string => kfz_escape($value);
+$escape = static fn (mixed $value): string => kfz_escape($value);
 ?>
 
-</div><!-- /.page-content -->
-</main><!-- /#content -->
+</div>
+</main>
 
 <footer class="kfz-footer">
 
@@ -18,7 +17,6 @@ $escape = static fn (string $value): string => kfz_escape($value);
         <div class="kfz-footer-grid">
 
             <div>
-
                 <a
                     href="<?= $escape($url('/')) ?>"
                     class="kfz-footer-brand"
@@ -31,140 +29,100 @@ $escape = static fn (string $value): string => kfz_escape($value);
                 </p>
 
                 <p>
-                    Bereiten Sie die Abmeldung Ihres Fahrzeugs bequem
-                    und übersichtlich online vor.
+                    Starten Sie Ihren Abmeldevorgang ohne Registrierung
+                    direkt online.
                 </p>
-
             </div>
 
 
             <div>
-
-                <h2>Leistung</h2>
+                <h2>Service</h2>
 
                 <ul>
-
                     <li>
-                        <a
-                            href="<?= $escape($url('/vorgang-starten/?vorgang=abmeldung')) ?>"
-                        >
+                        <a href="<?= $escape($url('/')) ?>">
                             Fahrzeug abmelden
                         </a>
                     </li>
 
-
-                </ul>
-
-            </div>
-
-
-            <div>
-
-                <h2>
-                    Informationen
-                </h2>
-
-                <ul>
-
                     <li>
-                        <a
-                            href="<?= $escape($url('/vorgaenge/')) ?>"
-                        >
-                            Meine Vorgänge
+                        <a href="<?= $escape(
+                            $url('/vorgang-pruefen/')
+                        ) ?>">
+                            Vorgang prüfen
                         </a>
                     </li>
 
                     <li>
-                        <a
-                            href="<?= $escape($url('/fahrzeuge/')) ?>"
-                        >
-                            Meine Fahrzeuge
-                        </a>
-                    </li>
-
-                    <li>
-                        <a
-                            href="<?= $escape($url('/hilfe/')) ?>"
-                        >
+                        <a href="<?= $escape($url('/hilfe/')) ?>">
                             Hilfe
                         </a>
                     </li>
 
                     <li>
-                        <a
-                            href="<?= $escape($url('/faq/')) ?>"
-                        >
+                        <a href="<?= $escape($url('/faq/')) ?>">
                             FAQ
                         </a>
                     </li>
-
                 </ul>
-
             </div>
 
 
             <div>
-
-                <h2>
-                    Rechtliches
-                </h2>
+                <h2>Informationen</h2>
 
                 <ul>
-
                     <li>
-                        <a
-                            href="<?= $escape($url('/kontakt/')) ?>"
-                        >
-                            Kontakt
-                        </a>
-                    </li>
-
-                    <li>
-                        <a
-                            href="<?= $escape($url('/ueber-kfz-digital/')) ?>"
-                        >
+                        <a href="<?= $escape(
+                            $url('/ueber-kfz-digital/')
+                        ) ?>">
                             Über Kfz Digital
                         </a>
                     </li>
 
                     <li>
-                        <a
-                            href="<?= $escape($url('/impressum/')) ?>"
-                        >
-                            Impressum
+                        <a href="<?= $escape($url('/kontakt/')) ?>">
+                            Kontakt
                         </a>
                     </li>
 
                     <li>
-                        <a
-                            href="<?= $escape($url('/datenschutz/')) ?>"
-                        >
+                        <a href="<?= $escape($url('/impressum/')) ?>">
+                            Impressum
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+
+            <div>
+                <h2>Rechtliches</h2>
+
+                <ul>
+                    <li>
+                        <a href="<?= $escape($url('/datenschutz/')) ?>">
                             Datenschutz
                         </a>
                     </li>
 
                     <li>
-                        <a
-                            href="<?= $escape($url('/nutzungsbedingungen/')) ?>"
-                        >
+                        <a href="<?= $escape(
+                            $url('/nutzungsbedingungen/')
+                        ) ?>">
                             Nutzungsbedingungen
                         </a>
                     </li>
-
                 </ul>
-
             </div>
 
         </div>
 
 
         <div class="kfz-footer-bottom">
-
             <span>
                 &copy; <?= date('Y') ?> Kfz Digital.
                 Alle Rechte vorbehalten.
             </span>
-
         </div>
 
     </div>
@@ -172,9 +130,11 @@ $escape = static fn (string $value): string => kfz_escape($value);
 </footer>
 
 <script
-    src="<?= $escape($url('/public/assets/js/header.js')) ?>"
-    defer>
-</script>
+    src="<?= $escape(
+        $url('/public/assets/js/header.js')
+    ) ?>"
+    defer
+></script>
 
 </body>
 </html>

@@ -39,3 +39,5 @@ desktop.ini
 *.zip
 *.tar.gz
 public/assets/assets.bak_*/
+/src/Config/database.php
+/src/Config/payment.php

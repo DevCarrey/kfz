@@ -3,12 +3,27 @@ declare(strict_types=1);
 
 /*
 |--------------------------------------------------------------------------
-| Ausgabe puffern
+| Kfz Digital – zentraler Einstiegspunkt
 |--------------------------------------------------------------------------
 |
-| Die Ausgabe wird zunächst zwischengespeichert.
-| Dadurch können Weiterleitungen und Sessions verarbeitet werden,
-| bevor HTML an den Browser gesendet wird.
+| Öffentliche Website ohne Kundenlogin.
+|
+| Öffentliche Bereiche:
+| - Startseite
+| - Fahrzeugabmeldung
+| - Vorgang prüfen
+| - Hilfe
+| - FAQ
+| - Kontakt
+| - Rechtliche Seiten
+|
+|--------------------------------------------------------------------------
+*/
+
+
+/*
+|--------------------------------------------------------------------------
+| Ausgabe puffern
 |--------------------------------------------------------------------------
 */
 
@@ -20,6 +35,15 @@ if (ob_get_level() === 0) {
 /*
 |--------------------------------------------------------------------------
 | Session starten
+|--------------------------------------------------------------------------
+|
+| Die Session wird weiterhin für technische Zwecke verwendet:
+| - CSRF-Token
+| - temporäre Formulardaten
+| - Bestätigungscode
+| - Fehlversuche
+|
+| Es gibt keinen verpflichtenden Kundenlogin.
 |--------------------------------------------------------------------------
 */
 
@@ -38,14 +62,20 @@ $srcDir = $projectDir . '/src';
 
 /*
 |--------------------------------------------------------------------------
-| App-Prefix automatisch ermitteln
+| App-Prefix ermitteln
 |--------------------------------------------------------------------------
 |
 | Beispiel:
-| C:\xampp\htdocs\kfz\index.php
-|
-| Website:
 | http://localhost/kfz/
+|
+| Ergebnis:
+| /kfz
+|
+| Bei einer eigenen Domain:
+| https://kfz-digital.de/
+|
+| Ergebnis:
+| ''
 |--------------------------------------------------------------------------
 */
 
@@ -69,12 +99,19 @@ $appPrefix = (
 
 $GLOBALS['appPrefix'] = $appPrefix;
 
+
+/*
+|--------------------------------------------------------------------------
+| Zentrale Hilfsfunktionen laden
+|--------------------------------------------------------------------------
+*/
+
 require_once __DIR__ . '/src/Support/view_helpers.php';
 
 
 /*
 |--------------------------------------------------------------------------
-| Hilfsfunktion für Includes
+| Sichere Include-Funktion
 |--------------------------------------------------------------------------
 */
 
@@ -86,7 +123,7 @@ function safe_include(string $file): void
 
 /*
 |--------------------------------------------------------------------------
-| Aktuelle Route ermitteln
+| Route ermitteln
 |--------------------------------------------------------------------------
 */
 
@@ -112,13 +149,13 @@ function getRoute(string $appPrefix): string
     );
 
     /*
-     * App-Prefix entfernen.
+     * Projekt-Prefix entfernen.
      *
      * Beispiel:
-     * /kfz/login/
+     * /kfz/vorgang-starten/
      *
      * wird zu:
-     * /login/
+     * /vorgang-starten/
      */
 
     if (
@@ -159,78 +196,38 @@ function getRoute(string $appPrefix): string
         $path
     );
 
-    return $parts[0] !== ''
-        ? $parts[0]
+    $route = $parts[0] ?? '';
+
+    return $route !== ''
+        ? $route
         : 'home';
 }
 
 
 /*
 |--------------------------------------------------------------------------
-| Logout verarbeiten
-|--------------------------------------------------------------------------
-|
-| Logout muss vor dem Header ausgeführt werden,
-| damit die Weiterleitung ohne Header-Fehler funktioniert.
+| Route laden
 |--------------------------------------------------------------------------
 */
 
 $route = getRoute($appPrefix);
 
-if ($route === 'logout') {
-
-    $_SESSION = [];
-
-    if (ini_get('session.use_cookies')) {
-
-        $sessionCookieParams = session_get_cookie_params();
-
-        setcookie(session_name(), '', [
-            'expires' => time() - 42000,
-            'path' => (string)$sessionCookieParams['path'],
-            'domain' => (string)$sessionCookieParams['domain'],
-            'secure' => (bool)$sessionCookieParams['secure'],
-            'httponly' => (bool)$sessionCookieParams['httponly'],
-            'samesite' => (string)($sessionCookieParams['samesite'] ?? 'Lax'),
-        ]);
-    }
-
-    session_destroy();
-
-    $loginUrl = $appPrefix === ''
-        ? '/login/'
-        : $appPrefix . '/login/';
-
-    if (ob_get_level() > 0) {
-        ob_end_clean();
-    }
-
-    header(
-        'Location: ' . $loginUrl,
-        true,
-        303
-    );
-
-    exit;
-}
-
 
 /*
 |--------------------------------------------------------------------------
-| Erlaubte Seiten
+| Öffentliche erlaubte Routen
 |--------------------------------------------------------------------------
 */
 
 $allowedRoutes = [
     'home',
-    'vorgaenge',
-    'fahrzeuge',
+    'vorgang-starten',
+    'vorgang-pruefen',
+    'zahlung',
+    'zahlung-erfolgreich',
+    'zahlung-abgebrochen',
     'hilfe',
     'kontakt',
-    'login',
-    'register',
-    'konto',
-    'vorgang-starten',
     'ueber-kfz-digital',
     'faq',
     'impressum',
@@ -247,6 +244,7 @@ $allowedRoutes = [
 
 if (!in_array($route, $allowedRoutes, true)) {
     http_response_code(404);
+
     $route = '404';
 }
 
@@ -261,78 +259,86 @@ $pageData = [
 
     'home' => [
         'title' => 'Kfz Digital – Fahrzeug online abmelden',
-        'description' => 'Mit Kfz Digital bereiten Sie die Abmeldung Ihres Fahrzeugs digital vor.',
-    ],
-
-    'vorgaenge' => [
-        'title' => 'Meine Vorgänge – Kfz Digital',
-        'description' => 'Übersicht und Status Ihrer digitalen Fahrzeugvorgänge.',
-    ],
-
-    'fahrzeuge' => [
-        'title' => 'Meine Fahrzeuge – Kfz Digital',
-        'description' => 'Verwalten Sie Ihre Fahrzeuge übersichtlich an einem Ort.',
-    ],
-
-    'hilfe' => [
-        'title' => 'Hilfe – Kfz Digital',
-        'description' => 'Antworten und Hilfestellungen rund um digitale Fahrzeugvorgänge.',
-    ],
-
-    'kontakt' => [
-        'title' => 'Kontakt – Kfz Digital',
-        'description' => 'Nehmen Sie Kontakt mit Kfz Digital auf.',
-    ],
-
-    'login' => [
-        'title' => 'Anmelden – Kfz Digital',
-        'description' => 'Melden Sie sich bei Kfz Digital an.',
-    ],
-
-    'register' => [
-        'title' => 'Konto erstellen – Kfz Digital',
-        'description' => 'Erstellen Sie Ihr persönliches Konto bei Kfz Digital.',
-    ],
-
-    'konto' => [
-        'title' => 'Mein Konto – Kfz Digital',
-        'description' => 'Verwalten Sie Ihr persönliches Kfz-Digital-Konto.',
+        'description' =>
+            'Fahrzeug online abmelden – einfach, übersichtlich und digital.',
     ],
 
     'vorgang-starten' => [
         'title' => 'Fahrzeug abmelden – Kfz Digital',
-        'description' => 'Bereiten Sie die digitale Abmeldung Ihres Fahrzeugs vor.',
+        'description' =>
+            'Starten Sie Ihre digitale Fahrzeugabmeldung ohne Registrierung.',
+    ],
+
+    'vorgang-pruefen' => [
+        'title' => 'Vorgang prüfen – Kfz Digital',
+        'description' =>
+            'Prüfen Sie den aktuellen Status Ihres Fahrzeugvorgangs.',
+    ],
+
+    'hilfe' => [
+        'title' => 'Hilfe – Kfz Digital',
+        'description' =>
+            'Hilfe und Informationen zur digitalen Fahrzeugabmeldung.',
+    ],
+
+    'kontakt' => [
+        'title' => 'Kontakt – Kfz Digital',
+        'description' =>
+            'Kontaktieren Sie den Kundenservice von Kfz Digital.',
     ],
 
     'ueber-kfz-digital' => [
         'title' => 'Über Kfz Digital',
-        'description' => 'Erfahren Sie mehr über Kfz Digital und unsere digitale Plattform.',
+        'description' =>
+            'Erfahren Sie mehr über Kfz Digital und den digitalen Abmeldeprozess.',
     ],
 
     'faq' => [
         'title' => 'FAQ – Kfz Digital',
-        'description' => 'Häufig gestellte Fragen zu Kfz Digital.',
+        'description' =>
+            'Häufig gestellte Fragen zur digitalen Fahrzeugabmeldung.',
     ],
 
     'impressum' => [
         'title' => 'Impressum – Kfz Digital',
-        'description' => 'Impressum von Kfz Digital.',
+        'description' =>
+            'Impressum von Kfz Digital.',
     ],
 
     'datenschutz' => [
         'title' => 'Datenschutz – Kfz Digital',
-        'description' => 'Datenschutzerklärung von Kfz Digital.',
+        'description' =>
+            'Informationen zum Datenschutz bei Kfz Digital.',
     ],
 
     'nutzungsbedingungen' => [
         'title' => 'Nutzungsbedingungen – Kfz Digital',
-        'description' => 'Nutzungsbedingungen von Kfz Digital.',
+        'description' =>
+            'Nutzungsbedingungen von Kfz Digital.',
     ],
 
     '404' => [
         'title' => 'Seite nicht gefunden – Kfz Digital',
-        'description' => 'Die angeforderte Seite wurde nicht gefunden.',
+        'description' =>
+            'Die angeforderte Seite konnte nicht gefunden werden.',
     ],
+    'zahlung' => [
+    'title' => 'Zahlung – Kfz Digital',
+    'description' =>
+        'Zahlung für Ihre digitale Fahrzeugabmeldung.',
+],
+
+'zahlung-erfolgreich' => [
+    'title' => 'Zahlung erfolgreich – Kfz Digital',
+    'description' =>
+        'Ihre Zahlung wurde erfolgreich bestätigt.',
+],
+
+'zahlung-abgebrochen' => [
+    'title' => 'Zahlung abgebrochen – Kfz Digital',
+    'description' =>
+        'Die Zahlung wurde abgebrochen.',
+],
 ];
 
 
@@ -340,7 +346,14 @@ $pageTitle = $pageData[$route]['title']
     ?? 'Kfz Digital';
 
 $pageDescription = $pageData[$route]['description']
-    ?? 'Fahrzeug online abmelden – einfach, sicher und digital mit Kfz Digital.';
+    ?? 'Fahrzeug online abmelden – einfach und digital.';
+
+
+/*
+|--------------------------------------------------------------------------
+| Canonical-Pfad bestimmen
+|--------------------------------------------------------------------------
+*/
 
 $canonicalPath = $route === 'home'
     ? '/'
@@ -361,7 +374,7 @@ $pageFile = $srcDir
 
 /*
 |--------------------------------------------------------------------------
-| 404-Datei optional
+| 404-Datei prüfen
 |--------------------------------------------------------------------------
 */
 
@@ -371,6 +384,15 @@ if (
 ) {
     $pageFile = null;
 }
+
+
+/*
+|--------------------------------------------------------------------------
+| Standardwerte für Seiten
+|--------------------------------------------------------------------------
+*/
+
+$GLOBALS['render_process_on_home'] = false;
 
 
 /*
@@ -390,7 +412,7 @@ safe_include(
 |--------------------------------------------------------------------------
 */
 
-if ($pageFile !== null) {
+if ($pageFile !== null && is_file($pageFile)) {
 
     safe_include($pageFile);
 
