@@ -164,12 +164,77 @@ $applicationStatement->execute([
                 )'
             );
 
+
 $historyStatement->execute([
     'application_id' => $applicationId,
     'old_status' => 'zahlung_offen',
     'new_status' => 'api_warteschlange',
     'comment' => 'Testzahlung erfolgreich bestätigt. Vorgang wartet auf die automatische API-Übermittlung.',
 ]);
+
+/*
+|--------------------------------------------------------------------------
+| E-Mail-Job zur Zahlungsbestätigung anlegen
+|--------------------------------------------------------------------------
+*/
+
+$paymentEmailPayload = json_encode(
+    [
+        'notification_type' => 'payment_confirmed',
+    ],
+    JSON_UNESCAPED_UNICODE
+    | JSON_UNESCAPED_SLASHES
+    | JSON_THROW_ON_ERROR
+);
+
+$paymentEmailCheck = $pdo->prepare(
+    "SELECT id
+     FROM application_jobs
+     WHERE application_id = :application_id
+       AND job_type = 'send_email'
+       AND status IN ('offen', 'in_bearbeitung')
+       AND JSON_UNQUOTE(
+            JSON_EXTRACT(
+                payload_json,
+                '$.notification_type'
+            )
+       ) = 'payment_confirmed'
+     LIMIT 1"
+);
+
+$paymentEmailCheck->execute([
+    'application_id' => $applicationId,
+]);
+
+if ($paymentEmailCheck->fetchColumn() === false) {
+    $paymentEmailInsert = $pdo->prepare(
+        "INSERT INTO application_jobs
+        (
+            application_id,
+            job_type,
+            status,
+            attempts,
+            max_attempts,
+            available_at,
+            payload_json
+        )
+        VALUES
+        (
+            :application_id,
+            'send_email',
+            'offen',
+            0,
+            5,
+            NOW(),
+            :payload_json
+        )"
+    );
+
+    $paymentEmailInsert->execute([
+        'application_id' => $applicationId,
+        'payload_json' => $paymentEmailPayload,
+    ]);
+}
 
 /*
 |--------------------------------------------------------------------------
