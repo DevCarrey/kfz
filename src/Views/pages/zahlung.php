@@ -1,68 +1,171 @@
 <?php
 declare(strict_types=1);
 
+/**
+ * Kfz Digital – Zahlung
+ *
+ * Aktuell:
+ * - Mock-Zahlung
+ * - keine echte Abbuchung
+ * - Zahlungsstatus wird gespeichert
+ * - payment_confirmed-E-Mail-Job wird erzeugt
+ * - api_submit-Job wird erzeugt
+ * - doppelte Jobs werden verhindert
+ *
+ * Ablauf:
+ *
+ * 1. Zahlungsvorgang aus Session laden
+ * 2. Mock-Zahlung bestätigen
+ * 3. Zahlung auf "bezahlt" setzen
+ * 4. Anwendung auf "api_warteschlange" setzen
+ * 5. Zahlungs-E-Mail-Job anlegen
+ * 6. API-Submit-Job anlegen
+ * 7. Zur Erfolgsseite weiterleiten
+ */
+
 require_once __DIR__ . '/../../Support/view_helpers.php';
 
 $url = static fn (string $path): string => kfz_url($path);
+
 $escape = static fn (mixed $value): string => kfz_escape($value);
 
-$paymentConfig = require __DIR__ . '/../../Config/payment.php';
 
-$amountCents = (int)(
+/*
+|--------------------------------------------------------------------------
+| Hilfsfunktionen
+|--------------------------------------------------------------------------
+*/
+
+$getInput = static function (
+    array $source,
+    string $key,
+    string $default = ''
+): string {
+    $value = $source[$key] ?? $default;
+
+    if (!is_scalar($value)) {
+        return $default;
+    }
+
+    return trim((string)$value);
+};
+
+$redirect = static function (
+    string $location
+): never {
+    if (!headers_sent()) {
+        header(
+            'Location: ' . $location,
+            true,
+            303
+        );
+
+        exit;
+    }
+
+    $safeLocation = htmlspecialchars(
+        $location,
+        ENT_QUOTES | ENT_SUBSTITUTE,
+        'UTF-8'
+    );
+
+    $jsonLocation = json_encode(
+        $location,
+        JSON_HEX_TAG
+        | JSON_HEX_AMP
+        | JSON_HEX_APOS
+        | JSON_HEX_QUOT
+    );
+
+    echo '<meta http-equiv="refresh" content="0;url='
+        . $safeLocation
+        . '">';
+
+    echo '<script>';
+    echo 'window.location.replace(';
+    echo $jsonLocation;
+    echo ');';
+    echo '</script>';
+
+    exit;
+};
+
+$addError = static function (
+    array &$errors,
+    string $message
+): void {
+    if (!in_array($message, $errors, true)) {
+        $errors[] = $message;
+    }
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Datenbank laden
+|--------------------------------------------------------------------------
+*/
+
+try {
+    $pdo = require __DIR__ . '/../../Config/database.php';
+
+    if (!$pdo instanceof PDO) {
+        throw new RuntimeException(
+            'Ungültige Datenbankverbindung.'
+        );
+    }
+} catch (Throwable $exception) {
+    ?>
+    <section class="kfz-section">
+        <div class="container">
+            <div
+                class="kfz-process-error"
+                role="alert"
+            >
+                Die Datenbankverbindung konnte nicht hergestellt werden.
+            </div>
+        </div>
+    </section>
+    <?php
+    return;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Zahlungs-Konfiguration laden
+|--------------------------------------------------------------------------
+*/
+
+$paymentConfigFile = __DIR__ . '/../../Config/payment.php';
+
+$paymentConfig = is_file($paymentConfigFile)
+    ? require $paymentConfigFile
+    : [
+        'mode' => 'mock',
+        'amount_cents' => 4990,
+        'currency' => 'EUR',
+    ];
+
+$paymentMode = strtolower(
+    (string)($paymentConfig['mode'] ?? 'mock')
+);
+
+$defaultAmountCents = (int)(
     $paymentConfig['amount_cents'] ?? 4990
 );
 
-$currency = strtoupper(
+$defaultCurrency = strtoupper(
     (string)($paymentConfig['currency'] ?? 'EUR')
 );
 
-$amount = number_format(
-    $amountCents / 100,
-    2,
-    ',',
-    '.'
-);
+if ($defaultAmountCents <= 0) {
+    $defaultAmountCents = 4990;
+}
 
-$applicationId = (int)(
-    $_SESSION['pending_payment_application_id'] ?? 0
-);
-
-$referenceNumber = (string)(
-    $_SESSION['pending_payment_reference'] ?? ''
-);
-
-if (
-    $applicationId <= 0
-    || $referenceNumber === ''
-):
-?>
-
-<section class="kfz-section">
-    <div class="container">
-
-        <div class="kfz-process-error" role="alert">
-            <h1>
-                Kein Zahlungsvorgang gefunden
-            </h1>
-
-            <p>
-                Bitte starten Sie die Fahrzeugabmeldung erneut.
-            </p>
-
-            <a
-                href="<?= $escape($url('/')) ?>"
-                class="kfz-button kfz-button-primary"
-            >
-                Zur Startseite
-            </a>
-        </div>
-
-    </div>
-</section>
-
-<?php
-return;
-endif;
+if ($defaultCurrency === '') {
+    $defaultCurrency = 'EUR';
+}
 
 
 /*
@@ -85,13 +188,160 @@ $csrfToken = (string)$_SESSION['process_csrf_token'];
 
 /*
 |--------------------------------------------------------------------------
-| Mockzahlung bestätigen
+| Zahlungsvorgang aus Session laden
+|--------------------------------------------------------------------------
+*/
+
+$applicationId = (int)(
+    $_SESSION['pending_payment_application_id'] ?? 0
+);
+
+$sessionReferenceNumber = trim(
+    (string)(
+        $_SESSION['pending_payment_reference'] ?? ''
+    )
+);
+
+$paymentError = '';
+$application = null;
+$payment = null;
+$referenceNumber = $sessionReferenceNumber;
+
+
+/*
+|--------------------------------------------------------------------------
+| Eindeutigen Job anlegen
+|--------------------------------------------------------------------------
+*/
+
+$createJob = static function (
+    PDO $pdo,
+    int $applicationId,
+    string $jobType,
+    array $payload = [],
+    int $maxAttempts = 5
+): void {
+    $existingStatement = $pdo->prepare(
+        'SELECT
+            id,
+            status,
+            payload_json
+         FROM application_jobs
+         WHERE application_id = :application_id
+           AND job_type = :job_type
+           AND status IN
+           (
+                :open_status,
+                :processing_status,
+                :successful_status
+           )
+         ORDER BY id DESC
+         LIMIT 20'
+    );
+
+    $existingStatement->execute([
+        'application_id' => $applicationId,
+        'job_type' => $jobType,
+        'open_status' => 'offen',
+        'processing_status' => 'in_bearbeitung',
+        'successful_status' => 'erfolgreich',
+    ]);
+
+    $existingJobs = $existingStatement->fetchAll();
+
+    if (is_array($existingJobs)) {
+        foreach ($existingJobs as $existingJob) {
+            $existingPayload = [];
+
+            if (!empty($existingJob['payload_json'])) {
+                $decodedPayload = json_decode(
+                    (string)$existingJob['payload_json'],
+                    true
+                );
+
+                if (is_array($decodedPayload)) {
+                    $existingPayload = $decodedPayload;
+                }
+            }
+
+            if ($existingPayload === $payload) {
+                return;
+            }
+
+            /*
+             * Für api_submit genügt ein erfolgreicher oder offener
+             * Job unabhängig vom Payload.
+             */
+            if (
+                $jobType === 'api_submit'
+                && in_array(
+                    (string)($existingJob['status'] ?? ''),
+                    [
+                        'offen',
+                        'in_bearbeitung',
+                        'erfolgreich',
+                    ],
+                    true
+                )
+            ) {
+                return;
+            }
+        }
+    }
+
+    $payloadJson = null;
+
+    if ($payload !== []) {
+        $payloadJson = json_encode(
+            $payload,
+            JSON_UNESCAPED_UNICODE
+            | JSON_UNESCAPED_SLASHES
+            | JSON_THROW_ON_ERROR
+        );
+    }
+
+    $insertStatement = $pdo->prepare(
+        'INSERT INTO application_jobs
+        (
+            application_id,
+            job_type,
+            status,
+            attempts,
+            max_attempts,
+            available_at,
+            payload_json
+        )
+        VALUES
+        (
+            :application_id,
+            :job_type,
+            :status,
+            0,
+            :max_attempts,
+            NOW(),
+            :payload_json
+        )'
+    );
+
+    $insertStatement->execute([
+        'application_id' => $applicationId,
+        'job_type' => $jobType,
+        'status' => 'offen',
+        'max_attempts' => $maxAttempts,
+        'payload_json' => $payloadJson,
+    ]);
+};
+
+
+/*
+|--------------------------------------------------------------------------
+| Zahlung bestätigen
 |--------------------------------------------------------------------------
 */
 
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST'
-    && ($_POST['payment_action'] ?? '') === 'complete'
+    && $getInput($_POST, 'payment_action') === 'complete'
 ) {
     $submittedToken = $_POST['csrf_token'] ?? '';
 
@@ -101,52 +351,182 @@ if (
         || !hash_equals($csrfToken, $submittedToken)
     ) {
         $paymentError =
-            'Die Sitzung ist abgelaufen. Bitte starten Sie erneut.';
-    } else {
-        try {
-            $pdo = require __DIR__ . '/../../Config/database.php';
+            'Die Sitzung ist abgelaufen. Bitte starten Sie den Vorgang erneut.';
+    }
 
+    if (
+        $paymentError === ''
+        && $applicationId <= 0
+    ) {
+        $paymentError =
+            'Es wurde kein offener Zahlungsvorgang gefunden.';
+    }
+
+    if ($paymentError === '') {
+        try {
             $pdo->beginTransaction();
 
-            $paymentStatement = $pdo->prepare(
-                'UPDATE payments
-                 SET
-                    status = :paid_status,
-                    paid_at = NOW()
-                 WHERE application_id = :application_id
-                   AND status = :open_status'
+            /*
+             * Vorgang laden
+             */
+            $applicationStatement = $pdo->prepare(
+                'SELECT
+                    id,
+                    reference_number,
+                    process_type,
+                    status,
+                    license_plate,
+                    first_name,
+                    last_name,
+                    email
+                 FROM applications
+                 WHERE id = :application_id
+                 LIMIT 1'
             );
 
-            $paymentStatement->execute([
-                'paid_status' => 'bezahlt',
+            $applicationStatement->execute([
                 'application_id' => $applicationId,
-                'open_status' => 'offen',
             ]);
 
-            if ($paymentStatement->rowCount() !== 1) {
+            $application = $applicationStatement->fetch();
+
+            if (!is_array($application)) {
                 throw new RuntimeException(
-                    'Die Zahlung ist nicht mehr offen.'
+                    'Der Vorgang wurde nicht gefunden.'
                 );
             }
 
-$applicationStatement = $pdo->prepare(
-    'UPDATE applications
-     SET
-        status = :new_status,
-        submitted_at = COALESCE(
-            submitted_at,
-            NOW()
-        )
-     WHERE id = :application_id
-       AND status = :old_status'
-);
+            $referenceNumber = trim(
+                (string)(
+                    $application['reference_number'] ?? ''
+                )
+            );
 
-$applicationStatement->execute([
-    'new_status' => 'api_warteschlange',
-    'application_id' => $applicationId,
-    'old_status' => 'zahlung_offen',
-]);
+            $oldApplicationStatus = (string)(
+                $application['status'] ?? ''
+            );
 
+            /*
+             * Zahlung laden
+             */
+            $paymentStatement = $pdo->prepare(
+                'SELECT
+                    id,
+                    provider,
+                    amount_cents,
+                    currency,
+                    status,
+                    paid_at
+                 FROM payments
+                 WHERE application_id = :application_id
+                 ORDER BY id DESC
+                 LIMIT 1'
+            );
+
+            $paymentStatement->execute([
+                'application_id' => $applicationId,
+            ]);
+
+            $payment = $paymentStatement->fetch();
+
+            if (!is_array($payment)) {
+                throw new RuntimeException(
+                    'Für den Vorgang wurde keine Zahlung gefunden.'
+                );
+            }
+
+            $paymentId = (int)(
+                $payment['id'] ?? 0
+            );
+
+            $paymentStatus = (string)(
+                $payment['status'] ?? ''
+            );
+
+            if ($paymentId <= 0) {
+                throw new RuntimeException(
+                    'Die Zahlungsdaten sind ungültig.'
+                );
+            }
+
+            /*
+             * Bereits bezahlten Vorgang nicht erneut bearbeiten
+             */
+            if ($paymentStatus === 'bezahlt') {
+                $pdo->commit();
+
+                $_SESSION['paid_application_id'] =
+                    $applicationId;
+
+                $_SESSION['paid_reference_number'] =
+                    $referenceNumber;
+
+                unset(
+                    $_SESSION['pending_payment_application_id'],
+                    $_SESSION['pending_payment_reference']
+                );
+
+                $redirect(
+                    $url('/zahlung-erfolgreich/')
+                );
+            }
+
+            if ($paymentStatus !== 'offen') {
+                throw new RuntimeException(
+                    'Dieser Zahlungsvorgang ist nicht mehr offen.'
+                );
+            }
+
+            /*
+             * Mock-Zahlung als bezahlt markieren
+             */
+            $paymentUpdate = $pdo->prepare(
+                "UPDATE payments
+                 SET
+                    status = 'bezahlt',
+                    paid_at = NOW()
+                 WHERE id = :payment_id
+                   AND status = 'offen'"
+            );
+
+            $paymentUpdate->execute([
+                'payment_id' => $paymentId,
+            ]);
+
+            if ($paymentUpdate->rowCount() !== 1) {
+                throw new RuntimeException(
+                    'Die Zahlung konnte nicht bestätigt werden.'
+                );
+            }
+
+            /*
+             * Vorgang für API-Übermittlung vormerken
+             */
+            $applicationUpdate = $pdo->prepare(
+                "UPDATE applications
+                 SET
+                    status = 'api_warteschlange',
+                    submitted_at = COALESCE(
+                        submitted_at,
+                        NOW()
+                    ),
+                    api_error = NULL
+                 WHERE id = :application_id
+                   AND status IN
+                   (
+                        'zahlung_offen',
+                        'bezahlt',
+                        'eingegangen'
+                   )"
+            );
+
+            $applicationUpdate->execute([
+                'application_id' => $applicationId,
+            ]);
+
+            /*
+             * Statushistorie Zahlung
+             */
             $historyStatement = $pdo->prepare(
                 'INSERT INTO application_status_history
                 (
@@ -164,152 +544,64 @@ $applicationStatement->execute([
                 )'
             );
 
+            $historyStatement->execute([
+                'application_id' => $applicationId,
+                'old_status' => $oldApplicationStatus,
+                'new_status' => 'api_warteschlange',
+                'comment' => $paymentMode === 'mock'
+                    ? 'Testzahlung erfolgreich bestätigt. Vorgang wartet auf die automatische API-Übermittlung.'
+                    : 'Zahlung erfolgreich bestätigt. Vorgang wartet auf die automatische API-Übermittlung.',
+            ]);
 
-$historyStatement->execute([
-    'application_id' => $applicationId,
-    'old_status' => 'zahlung_offen',
-    'new_status' => 'api_warteschlange',
-    'comment' => 'Testzahlung erfolgreich bestätigt. Vorgang wartet auf die automatische API-Übermittlung.',
-]);
+            /*
+             * Zahlungs-E-Mail-Job
+             */
+            $createJob(
+                $pdo,
+                $applicationId,
+                'send_email',
+                [
+                    'notification_type' => 'payment_confirmed',
+                ],
+                5
+            );
 
-/*
-|--------------------------------------------------------------------------
-| E-Mail-Job zur Zahlungsbestätigung anlegen
-|--------------------------------------------------------------------------
-*/
-
-$paymentEmailPayload = json_encode(
-    [
-        'notification_type' => 'payment_confirmed',
-    ],
-    JSON_UNESCAPED_UNICODE
-    | JSON_UNESCAPED_SLASHES
-    | JSON_THROW_ON_ERROR
-);
-
-$paymentEmailCheck = $pdo->prepare(
-    "SELECT id
-     FROM application_jobs
-     WHERE application_id = :application_id
-       AND job_type = 'send_email'
-       AND status IN ('offen', 'in_bearbeitung')
-       AND JSON_UNQUOTE(
-            JSON_EXTRACT(
-                payload_json,
-                '$.notification_type'
-            )
-       ) = 'payment_confirmed'
-     LIMIT 1"
-);
-
-$paymentEmailCheck->execute([
-    'application_id' => $applicationId,
-]);
-
-if ($paymentEmailCheck->fetchColumn() === false) {
-    $paymentEmailInsert = $pdo->prepare(
-        "INSERT INTO application_jobs
-        (
-            application_id,
-            job_type,
-            status,
-            attempts,
-            max_attempts,
-            available_at,
-            payload_json
-        )
-        VALUES
-        (
-            :application_id,
-            'send_email',
-            'offen',
-            0,
-            5,
-            NOW(),
-            :payload_json
-        )"
-    );
-
-    $paymentEmailInsert->execute([
-        'application_id' => $applicationId,
-        'payload_json' => $paymentEmailPayload,
-    ]);
-}
-
-/*
-|--------------------------------------------------------------------------
-| API-Job für automatische Übermittlung anlegen
-|--------------------------------------------------------------------------
-*/
-
-$jobCheckStatement = $pdo->prepare(
-    'SELECT id
-     FROM application_jobs
-     WHERE application_id = :application_id
-       AND job_type = :job_type
-       AND status IN (:open_status, :processing_status)
-     LIMIT 1'
-);
-
-$jobCheckStatement->execute([
-    'application_id' => $applicationId,
-    'job_type' => 'api_submit',
-    'open_status' => 'offen',
-    'processing_status' => 'in_bearbeitung',
-]);
-
-$existingJobId = $jobCheckStatement->fetchColumn();
-
-if ($existingJobId === false) {
-    $jobStatement = $pdo->prepare(
-        'INSERT INTO application_jobs
-        (
-            application_id,
-            job_type,
-            status,
-            attempts,
-            available_at
-        )
-        VALUES
-        (
-            :application_id,
-            :job_type,
-            :status,
-            0,
-            NOW()
-        )'
-    );
-
-    $jobStatement->execute([
-        'application_id' => $applicationId,
-        'job_type' => 'api_submit',
-        'status' => 'offen',
-    ]);
-}
+            /*
+             * API-Submit-Job
+             */
+            $createJob(
+                $pdo,
+                $applicationId,
+                'api_submit',
+                [],
+                5
+            );
 
             $pdo->commit();
 
-            $_SESSION['paid_reference_number'] =
-                $referenceNumber;
-
+            /*
+             * Temporäre Sessiondaten löschen
+             */
             unset(
                 $_SESSION['pending_payment_application_id'],
                 $_SESSION['pending_payment_reference']
             );
 
-            header(
-                'Location: ' . $url('/zahlung-erfolgreich/'),
-                true,
-                303
+            $_SESSION['paid_application_id'] =
+                $applicationId;
+
+            $_SESSION['paid_reference_number'] =
+                $referenceNumber;
+
+            $_SESSION['process_csrf_token'] = bin2hex(
+                random_bytes(32)
             );
 
-            exit;
+            $redirect(
+                $url('/zahlung-erfolgreich/')
+            );
         } catch (Throwable $exception) {
-            if (
-                isset($pdo)
-                && $pdo instanceof PDO
-                && $pdo->inTransaction()
-            ) {
+            if ($pdo->inTransaction()) {
                 $pdo->rollBack();
             }
 
@@ -318,6 +610,161 @@ if ($existingJobId === false) {
         }
     }
 }
+
+
+/*
+|--------------------------------------------------------------------------
+| Vorgang und Zahlung für Anzeige laden
+|--------------------------------------------------------------------------
+*/
+
+if ($applicationId > 0) {
+    try {
+        $applicationStatement = $pdo->prepare(
+            'SELECT
+                id,
+                reference_number,
+                process_type,
+                status,
+                license_plate,
+                first_name,
+                last_name,
+                email
+             FROM applications
+             WHERE id = :application_id
+             LIMIT 1'
+        );
+
+        $applicationStatement->execute([
+            'application_id' => $applicationId,
+        ]);
+
+        $application = $applicationStatement->fetch();
+
+        if (is_array($application)) {
+            $referenceNumber = trim(
+                (string)(
+                    $application['reference_number'] ?? ''
+                )
+            );
+        }
+
+        $paymentStatement = $pdo->prepare(
+            'SELECT
+                id,
+                provider,
+                amount_cents,
+                currency,
+                status,
+                paid_at
+             FROM payments
+             WHERE application_id = :application_id
+             ORDER BY id DESC
+             LIMIT 1'
+        );
+
+        $paymentStatement->execute([
+            'application_id' => $applicationId,
+        ]);
+
+        $payment = $paymentStatement->fetch();
+    } catch (Throwable $exception) {
+        $application = null;
+        $payment = null;
+
+        if ($paymentError === '') {
+            $paymentError =
+                'Der Zahlungsvorgang konnte nicht geladen werden.';
+        }
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Kein Zahlungsvorgang vorhanden
+|--------------------------------------------------------------------------
+*/
+
+if (
+    !is_array($application)
+    || !is_array($payment)
+):
+?>
+
+<section class="kfz-section">
+    <div class="container">
+
+        <div
+            class="kfz-process-error"
+            role="alert"
+        >
+            <h1>
+                Kein Zahlungsvorgang gefunden
+            </h1>
+
+            <p>
+                Es wurde kein offener Zahlungsvorgang gefunden.
+                Bitte starten Sie die Fahrzeugabmeldung erneut.
+            </p>
+
+            <a
+                href="<?= $escape($url('/')) ?>"
+                class="kfz-button kfz-button-primary"
+            >
+                Zur Startseite
+            </a>
+        </div>
+
+    </div>
+</section>
+
+<?php
+return;
+endif;
+
+
+/*
+|--------------------------------------------------------------------------
+| Bereits bezahlt
+|--------------------------------------------------------------------------
+*/
+
+if (
+    (string)($payment['status'] ?? '') === 'bezahlt'
+) {
+    $_SESSION['paid_application_id'] =
+        $applicationId;
+
+    $_SESSION['paid_reference_number'] =
+        $referenceNumber;
+
+    unset(
+        $_SESSION['pending_payment_application_id'],
+        $_SESSION['pending_payment_reference']
+    );
+
+    $redirect(
+        $url('/zahlung-erfolgreich/')
+    );
+}
+
+$paymentAmountCents = (int)(
+    $payment['amount_cents'] ?? $defaultAmountCents
+);
+
+$paymentCurrency = strtoupper(
+    (string)(
+        $payment['currency'] ?? $defaultCurrency
+    )
+);
+
+$paymentAmount = number_format(
+    $paymentAmountCents / 100,
+    2,
+    ',',
+    '.'
+);
 ?>
 
 <section
@@ -340,20 +787,25 @@ if ($existingJobId === false) {
             </h1>
 
             <p class="kfz-section-text">
-                Schließen Sie die Zahlung für Ihre
-                Fahrzeugabmeldung ab.
+                Schließen Sie die Zahlung für Ihre Fahrzeugabmeldung ab.
             </p>
 
         </div>
 
 
-        <?php if (!empty($paymentError)): ?>
+        <?php if ($paymentError !== ''): ?>
 
             <div
                 class="kfz-process-error"
                 role="alert"
             >
-                <?= $escape($paymentError) ?>
+                <h2>
+                    Zahlung konnte nicht verarbeitet werden
+                </h2>
+
+                <p>
+                    <?= $escape($paymentError) ?>
+                </p>
             </div>
 
         <?php endif; ?>
@@ -361,44 +813,96 @@ if ($existingJobId === false) {
 
         <div class="kfz-process-form-wrapper">
 
+            <div class="kfz-process-form-header">
+
+                <div>
+                    <span class="kfz-section-kicker">
+                        Vorgang
+                    </span>
+
+                    <h2>
+                        Fahrzeugabmeldung
+                    </h2>
+
+                    <p>
+                        Vorgangsnummer:
+                        <strong>
+                            <?= $escape($referenceNumber) ?>
+                        </strong>
+                    </p>
+                </div>
+
+            </div>
+
+
             <div class="kfz-payment-summary">
 
                 <div class="kfz-payment-summary-row">
                     <span>
-                        Vorgangsnummer
+                        Leistung
                     </span>
 
                     <strong>
-                        <?= $escape($referenceNumber) ?>
+                        Fahrzeugabmeldung
                     </strong>
                 </div>
 
                 <div class="kfz-payment-summary-row">
                     <span>
-                        Fahrzeugabmeldung
+                        Kennzeichen
                     </span>
 
                     <strong>
-                        <?= $escape($amount) ?>
-                        <?= $escape($currency) ?>
+                        <?= $escape(
+                            $application['license_plate'] ?? ''
+                        ) ?>
+                    </strong>
+                </div>
+
+                <div class="kfz-payment-summary-row">
+                    <span>
+                        Gesamtbetrag
+                    </span>
+
+                    <strong>
+                        <?= $escape($paymentAmount) ?>
+                        <?= $escape($paymentCurrency) ?>
                     </strong>
                 </div>
 
             </div>
 
 
-            <div class="kfz-process-info-card">
+            <?php if ($paymentMode === 'mock'): ?>
 
-                <strong>
-                    Testbetrieb
-                </strong>
+                <div class="kfz-process-info-card">
 
-                <p>
-                    Es findet keine echte Abbuchung statt.
-                    Die Zahlung wird nur simuliert.
-                </p>
+                    <strong>
+                        Testbetrieb
+                    </strong>
 
-            </div>
+                    <p>
+                        Es findet keine echte Abbuchung statt.
+                        Die Zahlung wird nur simuliert.
+                    </p>
+
+                </div>
+
+            <?php else: ?>
+
+                <div class="kfz-process-info-card">
+
+                    <strong>
+                        Zahlung
+                    </strong>
+
+                    <p>
+                        Die sichere Zahlungsabwicklung ist vorbereitet.
+                    </p>
+
+                </div>
+
+            <?php endif; ?>
 
 
             <form
@@ -423,7 +927,9 @@ if ($existingJobId === false) {
 
                     <a
                         href="<?= $escape(
-                            $url('/zahlung-abgebrochen/')
+                            $url(
+                                '/zahlung-abgebrochen/'
+                            )
                         ) ?>"
                         class="kfz-button kfz-button-outline"
                     >
@@ -434,7 +940,11 @@ if ($existingJobId === false) {
                         type="submit"
                         class="kfz-button kfz-button-primary"
                     >
-                        Testzahlung bestätigen
+                        <?php if ($paymentMode === 'mock'): ?>
+                            Testzahlung bestätigen
+                        <?php else: ?>
+                            Zahlung starten
+                        <?php endif; ?>
                     </button>
 
                 </div>
