@@ -19,9 +19,17 @@ function kfz_asset_url(string $path): string
     return kfz_url('/public/' . ltrim($path, '/'));
 }
 
-function kfz_escape(string $value): string
+function kfz_escape(mixed $value): string
 {
-    return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    if (is_array($value) || is_object($value)) {
+        $value = '';
+    }
+
+    return htmlspecialchars(
+        (string)$value,
+        ENT_QUOTES | ENT_SUBSTITUTE,
+        'UTF-8'
+    );
 }
 
 function kfz_is_logged_in(): bool

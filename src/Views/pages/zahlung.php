@@ -129,23 +129,23 @@ if (
                 );
             }
 
-            $applicationStatement = $pdo->prepare(
-                'UPDATE applications
-                 SET
-                    status = :new_status,
-                    submitted_at = COALESCE(
-                        submitted_at,
-                        NOW()
-                    )
-                 WHERE id = :application_id
-                   AND status = :old_status'
-            );
+$applicationStatement = $pdo->prepare(
+    'UPDATE applications
+     SET
+        status = :new_status,
+        submitted_at = COALESCE(
+            submitted_at,
+            NOW()
+        )
+     WHERE id = :application_id
+       AND status = :old_status'
+);
 
-            $applicationStatement->execute([
-                'new_status' => 'bezahlt',
-                'application_id' => $applicationId,
-                'old_status' => 'zahlung_offen',
-            ]);
+$applicationStatement->execute([
+    'new_status' => 'api_warteschlange',
+    'application_id' => $applicationId,
+    'old_status' => 'zahlung_offen',
+]);
 
             $historyStatement = $pdo->prepare(
                 'INSERT INTO application_status_history
@@ -164,12 +164,63 @@ if (
                 )'
             );
 
-            $historyStatement->execute([
-                'application_id' => $applicationId,
-                'old_status' => 'zahlung_offen',
-                'new_status' => 'bezahlt',
-                'comment' => 'Mockzahlung erfolgreich bestätigt.',
-            ]);
+$historyStatement->execute([
+    'application_id' => $applicationId,
+    'old_status' => 'zahlung_offen',
+    'new_status' => 'api_warteschlange',
+    'comment' => 'Testzahlung erfolgreich bestätigt. Vorgang wartet auf die automatische API-Übermittlung.',
+]);
+
+/*
+|--------------------------------------------------------------------------
+| API-Job für automatische Übermittlung anlegen
+|--------------------------------------------------------------------------
+*/
+
+$jobCheckStatement = $pdo->prepare(
+    'SELECT id
+     FROM application_jobs
+     WHERE application_id = :application_id
+       AND job_type = :job_type
+       AND status IN (:open_status, :processing_status)
+     LIMIT 1'
+);
+
+$jobCheckStatement->execute([
+    'application_id' => $applicationId,
+    'job_type' => 'api_submit',
+    'open_status' => 'offen',
+    'processing_status' => 'in_bearbeitung',
+]);
+
+$existingJobId = $jobCheckStatement->fetchColumn();
+
+if ($existingJobId === false) {
+    $jobStatement = $pdo->prepare(
+        'INSERT INTO application_jobs
+        (
+            application_id,
+            job_type,
+            status,
+            attempts,
+            available_at
+        )
+        VALUES
+        (
+            :application_id,
+            :job_type,
+            :status,
+            0,
+            NOW()
+        )'
+    );
+
+    $jobStatement->execute([
+        'application_id' => $applicationId,
+        'job_type' => 'api_submit',
+        'status' => 'offen',
+    ]);
+}
 
             $pdo->commit();
 

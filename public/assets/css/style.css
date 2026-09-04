@@ -4569,3 +4569,112 @@ button {
     font-weight: 700;
     color: #202522;
 }
+
+/* =====================================================
+   Admin-Dashboard
+   ===================================================== */
+
+.kfz-admin-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+}
+
+.kfz-admin-stat-grid {
+    display: grid;
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(180px, 1fr)
+    );
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.kfz-admin-stat-card {
+    padding: 1.25rem;
+    border: 1px solid #dfe5e1;
+    border-radius: .75rem;
+    background: #fff;
+    box-shadow: 0 .25rem 1rem rgba(32, 37, 34, .06);
+}
+
+.kfz-admin-stat-card span {
+    display: block;
+    color: #66706a;
+    font-size: .9rem;
+}
+
+.kfz-admin-stat-card strong {
+    display: block;
+    margin-top: .5rem;
+    color: #202522;
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.kfz-admin-stat-card-warning {
+    border-color: #e5b4a7;
+    background: #fff8f5;
+}
+
+.kfz-admin-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+}
+
+.kfz-admin-table {
+    width: 100%;
+    min-width: 850px;
+    border-collapse: collapse;
+}
+
+.kfz-admin-table th,
+.kfz-admin-table td {
+    padding: .85rem;
+    border-bottom: 1px solid #e3e8e4;
+    text-align: left;
+    vertical-align: top;
+}
+
+.kfz-admin-table th {
+    color: #59645d;
+    font-size: .85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.kfz-admin-table td {
+    color: #202522;
+}
+
+.kfz-admin-table a {
+    color: #202522;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.kfz-admin-table a:hover {
+    text-decoration: underline;
+}
+
+.kfz-admin-status {
+    display: inline-flex;
+    padding: .3rem .55rem;
+    border-radius: 999px;
+    background: #edf2ee;
+    color: #39463d;
+    font-size: .8rem;
+    font-weight: 700;
+}
+
+.kfz-admin-status-error {
+    background: #ffe5df;
+    color: #a6311e;
+}
+
+@media (max-width: 700px) {
+    .kfz-admin-stat-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}

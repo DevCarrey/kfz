@@ -215,6 +215,8 @@ $allowedRoutes = [
     'impressum',
     'datenschutz',
     'nutzungsbedingungen',
+    'admin',
+    'admin-vorgang',
 ];
 
 /*
@@ -319,6 +321,11 @@ $pageData = [
     'title' => 'Zahlung abgebrochen – Kfz Digital',
     'description' =>
         'Die Zahlung wurde abgebrochen.',
+],
+'admin'=> [
+    'title' => 'Admin – Kfz Digital',
+    'description' =>
+        'Administrationsbereich von Kfz Digital.',
 ],
 ];
 
