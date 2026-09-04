@@ -3,33 +3,15 @@ declare(strict_types=1);
 
 /*
 |--------------------------------------------------------------------------
-| Kfz Digital – zentraler Einstiegspunkt
-|--------------------------------------------------------------------------
-|
-| Öffentliche Website ohne Kundenlogin.
-|
-| Öffentliche Bereiche:
-| - Startseite
-| - Fahrzeugabmeldung
-| - Vorgang prüfen
-| - Hilfe
-| - FAQ
-| - Kontakt
-| - Rechtliche Seiten
-|
+| Ausgabe immer puffern
 |--------------------------------------------------------------------------
 */
 
-
-/*
-|--------------------------------------------------------------------------
-| Ausgabe puffern
-|--------------------------------------------------------------------------
-*/
-
-if (ob_get_level() === 0) {
-    ob_start();
+while (ob_get_level() > 0) {
+    ob_end_clean();
 }
+
+ob_start();
 
 
 /*
@@ -235,7 +217,6 @@ $allowedRoutes = [
     'nutzungsbedingungen',
 ];
 
-
 /*
 |--------------------------------------------------------------------------
 | Ungültige Route auf 404 setzen
@@ -322,7 +303,7 @@ $pageData = [
         'description' =>
             'Die angeforderte Seite konnte nicht gefunden werden.',
     ],
-    'zahlung' => [
+'zahlung' => [
     'title' => 'Zahlung – Kfz Digital',
     'description' =>
         'Zahlung für Ihre digitale Fahrzeugabmeldung.',

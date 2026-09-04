@@ -13,45 +13,49 @@ $amountCents = (int)(
 );
 
 $currency = strtoupper(
-    (string)(
-        $paymentConfig['currency'] ?? 'EUR'
-    )
+    (string)($paymentConfig['currency'] ?? 'EUR')
 );
 
-$paymentAmount = number_format(
+$amount = number_format(
     $amountCents / 100,
     2,
     ',',
     '.'
 );
 
-$paymentApplicationId = (int)(
+$applicationId = (int)(
     $_SESSION['pending_payment_application_id'] ?? 0
 );
 
-$paymentReference = (string)(
+$referenceNumber = (string)(
     $_SESSION['pending_payment_reference'] ?? ''
 );
 
-if ($paymentApplicationId <= 0):
+if (
+    $applicationId <= 0
+    || $referenceNumber === ''
+):
 ?>
 
 <section class="kfz-section">
     <div class="container">
 
-        <div
-            class="kfz-process-error"
-            role="alert"
-        >
-            Es wurde kein offener Zahlungsvorgang gefunden.
-        </div>
+        <div class="kfz-process-error" role="alert">
+            <h1>
+                Kein Zahlungsvorgang gefunden
+            </h1>
 
-        <a
-            href="<?= $escape($url('/')) ?>"
-            class="kfz-button kfz-button-primary"
-        >
-            Zur Startseite
-        </a>
+            <p>
+                Bitte starten Sie die Fahrzeugabmeldung erneut.
+            </p>
+
+            <a
+                href="<?= $escape($url('/')) ?>"
+                class="kfz-button kfz-button-primary"
+            >
+                Zur Startseite
+            </a>
+        </div>
 
     </div>
 </section>
@@ -77,6 +81,127 @@ if (
 }
 
 $csrfToken = (string)$_SESSION['process_csrf_token'];
+
+
+/*
+|--------------------------------------------------------------------------
+| Mockzahlung bestätigen
+|--------------------------------------------------------------------------
+*/
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST'
+    && ($_POST['payment_action'] ?? '') === 'complete'
+) {
+    $submittedToken = $_POST['csrf_token'] ?? '';
+
+    if (
+        !is_string($submittedToken)
+        || $submittedToken === ''
+        || !hash_equals($csrfToken, $submittedToken)
+    ) {
+        $paymentError =
+            'Die Sitzung ist abgelaufen. Bitte starten Sie erneut.';
+    } else {
+        try {
+            $pdo = require __DIR__ . '/../../Config/database.php';
+
+            $pdo->beginTransaction();
+
+            $paymentStatement = $pdo->prepare(
+                'UPDATE payments
+                 SET
+                    status = :paid_status,
+                    paid_at = NOW()
+                 WHERE application_id = :application_id
+                   AND status = :open_status'
+            );
+
+            $paymentStatement->execute([
+                'paid_status' => 'bezahlt',
+                'application_id' => $applicationId,
+                'open_status' => 'offen',
+            ]);
+
+            if ($paymentStatement->rowCount() !== 1) {
+                throw new RuntimeException(
+                    'Die Zahlung ist nicht mehr offen.'
+                );
+            }
+
+            $applicationStatement = $pdo->prepare(
+                'UPDATE applications
+                 SET
+                    status = :new_status,
+                    submitted_at = COALESCE(
+                        submitted_at,
+                        NOW()
+                    )
+                 WHERE id = :application_id
+                   AND status = :old_status'
+            );
+
+            $applicationStatement->execute([
+                'new_status' => 'bezahlt',
+                'application_id' => $applicationId,
+                'old_status' => 'zahlung_offen',
+            ]);
+
+            $historyStatement = $pdo->prepare(
+                'INSERT INTO application_status_history
+                (
+                    application_id,
+                    old_status,
+                    new_status,
+                    comment
+                )
+                VALUES
+                (
+                    :application_id,
+                    :old_status,
+                    :new_status,
+                    :comment
+                )'
+            );
+
+            $historyStatement->execute([
+                'application_id' => $applicationId,
+                'old_status' => 'zahlung_offen',
+                'new_status' => 'bezahlt',
+                'comment' => 'Mockzahlung erfolgreich bestätigt.',
+            ]);
+
+            $pdo->commit();
+
+            $_SESSION['paid_reference_number'] =
+                $referenceNumber;
+
+            unset(
+                $_SESSION['pending_payment_application_id'],
+                $_SESSION['pending_payment_reference']
+            );
+
+            header(
+                'Location: ' . $url('/zahlung-erfolgreich/'),
+                true,
+                303
+            );
+
+            exit;
+        } catch (Throwable $exception) {
+            if (
+                isset($pdo)
+                && $pdo instanceof PDO
+                && $pdo->inTransaction()
+            ) {
+                $pdo->rollBack();
+            }
+
+            $paymentError =
+                'Die Zahlung konnte nicht verarbeitet werden.';
+        }
+    }
+}
 ?>
 
 <section
@@ -88,7 +213,7 @@ $csrfToken = (string)$_SESSION['process_csrf_token'];
         <div class="kfz-section-header">
 
             <span class="kfz-section-kicker">
-                Testzahlung
+                Zahlung
             </span>
 
             <h1
@@ -99,53 +224,47 @@ $csrfToken = (string)$_SESSION['process_csrf_token'];
             </h1>
 
             <p class="kfz-section-text">
-                Schließen Sie die Testzahlung für Ihre
+                Schließen Sie die Zahlung für Ihre
                 Fahrzeugabmeldung ab.
             </p>
 
         </div>
 
 
-        <div class="kfz-process-form-wrapper">
+        <?php if (!empty($paymentError)): ?>
 
-            <div class="kfz-process-info-card">
-
-                <div>
-                    <strong>
-                        Fahrzeugabmeldung
-                    </strong>
-
-                    <p>
-                        Vorgangsnummer:
-                        <strong>
-                            <?= $escape($paymentReference) ?>
-                        </strong>
-                    </p>
-                </div>
-
+            <div
+                class="kfz-process-error"
+                role="alert"
+            >
+                <?= $escape($paymentError) ?>
             </div>
 
+        <?php endif; ?>
+
+
+        <div class="kfz-process-form-wrapper">
 
             <div class="kfz-payment-summary">
 
                 <div class="kfz-payment-summary-row">
                     <span>
-                        Servicegebühr
+                        Vorgangsnummer
                     </span>
 
                     <strong>
-                        <?= $escape($paymentAmount) ?>
-                        <?= $escape($currency) ?>
+                        <?= $escape($referenceNumber) ?>
                     </strong>
                 </div>
 
                 <div class="kfz-payment-summary-row">
                     <span>
-                        Zahlungsart
+                        Fahrzeugabmeldung
                     </span>
 
                     <strong>
-                        Testzahlung
+                        <?= $escape($amount) ?>
+                        <?= $escape($currency) ?>
                     </strong>
                 </div>
 
@@ -155,13 +274,12 @@ $csrfToken = (string)$_SESSION['process_csrf_token'];
             <div class="kfz-process-info-card">
 
                 <strong>
-                    Hinweis zum Testbetrieb
+                    Testbetrieb
                 </strong>
 
                 <p>
                     Es findet keine echte Abbuchung statt.
-                    Diese Testzahlung simuliert lediglich den späteren
-                    Zahlungsablauf.
+                    Die Zahlung wird nur simuliert.
                 </p>
 
             </div>

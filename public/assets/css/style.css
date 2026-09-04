@@ -4563,3 +4563,9 @@ button {
         font-size: 1.2rem;
     }
 }
+.kfz-process-status {
+    margin: .75rem 0;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #202522;
+}
