@@ -7,11 +7,13 @@ declare(strict_types=1);
  * Unterstützte Jobs:
  * - api_submit
  * - api_status_check
+ * - send_email
  *
  * Aktuell:
  * - Mock-API
+ * - Mock-E-Mail-Versand
  * - automatische Wiederholungsversuche
- * - Statusabfragen
+ * - Statushistorie
  *
  * Start:
  * C:\xampp\php\php.exe bin\process-jobs.php
@@ -22,7 +24,7 @@ $projectDir = dirname(__DIR__);
 
 /*
 |--------------------------------------------------------------------------
-| Benötigte Dateien laden
+| Services laden
 |--------------------------------------------------------------------------
 */
 
@@ -33,9 +35,29 @@ if (is_file($apiServiceFile)) {
     require_once $apiServiceFile;
 }
 
+$notificationServiceFile = $projectDir
+    . '/src/Services/NotificationService.php';
+
+if (is_file($notificationServiceFile)) {
+    require_once $notificationServiceFile;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Datenbank laden
+|--------------------------------------------------------------------------
+*/
+
 try {
     $pdo = require $projectDir
         . '/src/Config/database.php';
+
+    if (!$pdo instanceof PDO) {
+        throw new RuntimeException(
+            'Die Datenbankverbindung ist ungültig.'
+        );
+    }
 } catch (Throwable $exception) {
     fwrite(
         STDERR,
@@ -50,7 +72,7 @@ try {
 
 /*
 |--------------------------------------------------------------------------
-| API-Service laden
+| Konfigurationen laden
 |--------------------------------------------------------------------------
 */
 
@@ -63,14 +85,34 @@ $paymentConfig = is_file($paymentConfigFile)
         'mode' => 'mock',
     ];
 
+$mailConfigFile = $projectDir
+    . '/src/Config/mail.php';
+
+$mailConfig = is_file($mailConfigFile)
+    ? require $mailConfigFile
+    : [
+        'mode' => 'mock',
+    ];
+
 $apiMode = strtolower(
     (string)($paymentConfig['mode'] ?? 'mock')
 );
 
+$apiService = null;
+
 if (class_exists('IkfzApiService')) {
     $apiService = new IkfzApiService($apiMode);
-} else {
-    $apiService = null;
+}
+
+$notificationService = null;
+
+if (class_exists('NotificationService')) {
+    $notificationService = new NotificationService(
+        $projectDir,
+        is_array($mailConfig)
+            ? $mailConfig
+            : []
+    );
 }
 
 
@@ -80,12 +122,11 @@ if (class_exists('IkfzApiService')) {
 |--------------------------------------------------------------------------
 */
 
-$workerName = gethostname()
+$workerName = (string)(gethostname() ?: 'worker')
     . '-'
     . getmypid();
 
 $maxJobsPerRun = 25;
-
 $defaultMaxAttempts = 5;
 
 $retryDelays = [
@@ -115,7 +156,7 @@ $writeOutput = static function (
 
 /*
 |--------------------------------------------------------------------------
-| Historie speichern
+| Statushistorie schreiben
 |--------------------------------------------------------------------------
 */
 
@@ -154,6 +195,80 @@ $addHistory = static function (
 
 /*
 |--------------------------------------------------------------------------
+| E-Mail-Job anlegen
+|--------------------------------------------------------------------------
+*/
+
+$createEmailJob = static function (
+    PDO $pdo,
+    int $applicationId,
+    string $notificationType
+): void {
+    $payloadJson = json_encode(
+        [
+            'notification_type' => $notificationType,
+        ],
+        JSON_UNESCAPED_UNICODE
+        | JSON_UNESCAPED_SLASHES
+        | JSON_THROW_ON_ERROR
+    );
+
+    $checkStatement = $pdo->prepare(
+        "SELECT id
+         FROM application_jobs
+         WHERE application_id = :application_id
+           AND job_type = 'send_email'
+           AND status IN ('offen', 'in_bearbeitung')
+           AND JSON_UNQUOTE(
+                JSON_EXTRACT(
+                    payload_json,
+                    '$.notification_type'
+                )
+           ) = :notification_type
+         LIMIT 1"
+    );
+
+    $checkStatement->execute([
+        'application_id' => $applicationId,
+        'notification_type' => $notificationType,
+    ]);
+
+    if ($checkStatement->fetchColumn() !== false) {
+        return;
+    }
+
+    $insertStatement = $pdo->prepare(
+        "INSERT INTO application_jobs
+        (
+            application_id,
+            job_type,
+            status,
+            attempts,
+            max_attempts,
+            available_at,
+            payload_json
+        )
+        VALUES
+        (
+            :application_id,
+            'send_email',
+            'offen',
+            0,
+            5,
+            NOW(),
+            :payload_json
+        )"
+    );
+
+    $insertStatement->execute([
+        'application_id' => $applicationId,
+        'payload_json' => $payloadJson,
+    ]);
+};
+
+
+/*
+|--------------------------------------------------------------------------
 | Offene Jobs laden
 |--------------------------------------------------------------------------
 */
@@ -167,8 +282,17 @@ $jobSql = "
         j.attempts,
         j.max_attempts,
         j.error_message,
+        j.payload_json,
         a.reference_number,
-        a.status AS application_status
+        a.status AS application_status,
+        a.email,
+        a.first_name,
+        a.last_name,
+        a.license_plate,
+        a.api_provider,
+        a.api_reference,
+        a.api_status,
+        a.api_submitted_at
     FROM application_jobs j
     INNER JOIN applications a
         ON a.id = j.application_id
@@ -248,6 +372,7 @@ foreach ($jobs as $job) {
             [
                 'api_submit',
                 'api_status_check',
+                'send_email',
             ],
             true
         )
@@ -306,13 +431,17 @@ foreach ($jobs as $job) {
 
 
         /*
-         * Anwendung laden
+         * Anwendung aus der Datenbank laden
          */
         $applicationStatement = $pdo->prepare(
             'SELECT
                 id,
                 reference_number,
                 status,
+                email,
+                first_name,
+                last_name,
+                license_plate,
                 api_provider,
                 api_reference,
                 api_status,
@@ -330,13 +459,80 @@ foreach ($jobs as $job) {
 
         if (!is_array($application)) {
             throw new RuntimeException(
-                'Vorgang wurde nicht gefunden.'
+                'Der Vorgang wurde nicht gefunden.'
             );
         }
 
 
         /*
-         * API-Service prüfen
+         |--------------------------------------------------------------------------
+         | Job: send_email
+         |--------------------------------------------------------------------------
+         */
+        if ($jobType === 'send_email') {
+            if (
+                $notificationService === null
+                || !method_exists(
+                    $notificationService,
+                    'sendApplicationNotification'
+                )
+            ) {
+                throw new RuntimeException(
+                    'Der NotificationService ist nicht verfügbar.'
+                );
+            }
+
+            $payload = [];
+
+            if (!empty($job['payload_json'])) {
+                $decodedPayload = json_decode(
+                    (string)$job['payload_json'],
+                    true
+                );
+
+                if (is_array($decodedPayload)) {
+                    $payload = $decodedPayload;
+                }
+            }
+
+            $notificationType = (string)(
+                $payload['notification_type']
+                ?? 'status_update'
+            );
+
+            $notificationService
+                ->sendApplicationNotification(
+                    $application,
+                    $notificationType
+                );
+
+            $emailJobUpdate = $pdo->prepare(
+                "UPDATE application_jobs
+                 SET
+                    status = 'erfolgreich',
+                    processed_at = NOW(),
+                    error_message = NULL,
+                    locked_at = NULL,
+                    locked_by = NULL
+                 WHERE id = :job_id"
+            );
+
+            $emailJobUpdate->execute([
+                'job_id' => $jobId,
+            ]);
+
+            $writeOutput(
+                'E-Mail-Job #'
+                . $jobId
+                . ' erfolgreich verarbeitet.'
+            );
+
+            continue;
+        }
+
+
+        /*
+         * API-Service für API-Jobs prüfen
          */
         if (
             $apiService === null
@@ -361,7 +557,7 @@ foreach ($jobs as $job) {
          |--------------------------------------------------------------------------
          */
         if ($jobType === 'api_submit') {
-            $oldApplicationStatus = (string)(
+            $oldStatus = (string)(
                 $application['status'] ?? ''
             );
 
@@ -443,12 +639,18 @@ foreach ($jobs as $job) {
             $addHistory(
                 $pdo,
                 $applicationId,
-                $oldApplicationStatus,
+                $oldStatus,
                 'api_uebermittelt',
                 'Vorgang automatisch an die API übermittelt. '
                 . 'Referenz: '
                 . $apiReference
                 . '.'
+            );
+
+            $createEmailJob(
+                $pdo,
+                $applicationId,
+                'api_submitted'
             );
 
             /*
@@ -467,9 +669,7 @@ foreach ($jobs as $job) {
                 'application_id' => $applicationId,
             ]);
 
-            $existingStatusJob = $statusJobCheck->fetchColumn();
-
-            if ($existingStatusJob === false) {
+            if ($statusJobCheck->fetchColumn() === false) {
                 $statusJobInsert = $pdo->prepare(
                     "INSERT INTO application_jobs
                     (
@@ -520,7 +720,7 @@ foreach ($jobs as $job) {
 
             if ($apiReference === '') {
                 throw new RuntimeException(
-                    'Keine API-Referenz für Statusabfrage vorhanden.'
+                    'Keine API-Referenz vorhanden.'
                 );
             }
 
@@ -577,11 +777,11 @@ foreach ($jobs as $job) {
             );
 
             if ($isCompleted) {
-                $newApplicationStatus = 'abgeschlossen';
+                $newStatus = 'abgeschlossen';
             } elseif ($isRejected) {
-                $newApplicationStatus = 'abgelehnt';
+                $newStatus = 'abgelehnt';
             } else {
-                $newApplicationStatus = 'in_bearbeitung';
+                $newStatus = 'in_bearbeitung';
             }
 
             $applicationUpdate = $pdo->prepare(
@@ -596,7 +796,7 @@ foreach ($jobs as $job) {
             );
 
             $applicationUpdate->execute([
-                'status' => $newApplicationStatus,
+                'status' => $newStatus,
                 'api_status' => $apiStatus,
                 'api_last_response' => $apiResponseJson,
                 'application_id' => $applicationId,
@@ -617,11 +817,15 @@ foreach ($jobs as $job) {
                 $jobUpdate->execute([
                     'job_id' => $jobId,
                 ]);
+
+                $createEmailJob(
+                    $pdo,
+                    $applicationId,
+                    $isCompleted
+                        ? 'completed'
+                        : 'error'
+                );
             } else {
-                /*
-                 * Statusjob erneut öffnen.
-                 * Statusabfragen erhalten mehr Versuche.
-                 */
                 $jobUpdate = $pdo->prepare(
                     "UPDATE application_jobs
                      SET
@@ -646,7 +850,7 @@ foreach ($jobs as $job) {
                 $pdo,
                 $applicationId,
                 (string)($application['status'] ?? ''),
-                $newApplicationStatus,
+                $newStatus,
                 'API-Status automatisch aktualisiert: '
                 . $apiStatus
                 . '.'
@@ -662,17 +866,17 @@ foreach ($jobs as $job) {
             continue;
         }
     } catch (Throwable $exception) {
-        /*
-         * Transaktion zurückrollen
-         */
-        if ($pdo->inTransaction()) {
-            $pdo->rollBack();
-        }
-
         $errorMessage = mb_substr(
             $exception->getMessage(),
             0,
             1000
+        );
+
+        $writeOutput(
+            'Job #'
+            . $jobId
+            . ' fehlgeschlagen: '
+            . $errorMessage
         );
 
         /*
@@ -710,9 +914,9 @@ foreach ($jobs as $job) {
                 ]);
 
                 $writeOutput(
-                    'Job #'
+                    'Neuer Versuch für Job #'
                     . $jobId
-                    . ' fehlgeschlagen. Neuer Versuch in '
+                    . ' in '
                     . $delaySeconds
                     . ' Sekunden.'
                 );
@@ -746,10 +950,18 @@ foreach ($jobs as $job) {
                     'application_id' => $applicationId,
                 ]);
 
+                $createEmailJob(
+                    $pdo,
+                    $applicationId,
+                    'error'
+                );
+
                 $addHistory(
                     $pdo,
                     $applicationId,
-                    (string)($job['application_status'] ?? ''),
+                    (string)(
+                        $job['application_status'] ?? ''
+                    ),
                     'fehler',
                     'Automatische Verarbeitung nach '
                     . $currentAttempt
